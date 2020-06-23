@@ -27,15 +27,15 @@ else:
 setuptools.setup(
     name="mef_tools",
     version=verstr,
-    license='MFMER',
+    license='Apache',
     url="https://github.com/xmival00/MEF_Tools",
 
     author="Filip Mivalt",
     author_email="mivalt.filip@mayo.edu",
 
 
-    description="",
-    long_description="",
+    description="Advanced tools for handling MEF file format using pymef - python wrapper.",
+    long_description="Advanced tools for handling MEF file format using pymef - python wrapper. MefWriter and MefReader are high-level API tools containing all headers required for writing a mef file.",
     long_description_content_type="",
 
     packages=setuptools.find_packages(),

@@ -13,6 +13,6 @@ deploy:
     secure: qm4nUognY+l/3zJWmKQFu8QAB/+1mrFy8+dHINisX/84GSQnX2RI1aW70CM6cumd3oj2sitZ9Tsv70X6wqrqO+yb+b9IbBo1EiyQ65omUNxlizvr6r4PBhgFLKJoIQAaOThw1oiKbzru4gvj7kLNTKQAo75RH4zima5kzBmdh3ssP5WiyiktHoDxxR0ZgCUWrygtZLoL45nsc8Y7yzSjxY1irjR/ztYaD17WxefBJOmrJc3NLD9TWz9f0ajtj8OOkKnqo/FXJMg9E6kGNWOBvR2iHhYldWkcsqiASl3FqRYx/U5PyUxhr1fx81zLi7p+uoq51hoyh38vc2nS3gerWarPisV+P0DYv/efczbpgh5ihZDJTFL1obPNg2Zx/F0Ckhy3dbqvXw3yL8I/a1TihjrmZ6pkrStu+WbuMFbGk37BZyf0kVA1f93EGdmoupVCjww2Oyo9mcxA6BSXAeds/zCDm5eANq3nLsv1t+64Z4nJKqqfc8qXjtsF9K5Fhx+XAuE0Gxks3nxay7qRpsNatUpOu8p4W49fNsNti6dH/GbCrELr9lvMLaYpBDB3RDt5tNtSvLlXyFOGXwud24x1d60tmPxlvSt3RWJlUykcjOW+aFwcFr4y4TsUezyuAs3ModE2p+12woKRSqWF7O8EwzdtV1zmUHI7iyuKr6A3fGk=
   skip_cleanup: true
   on:
-    tags: false
-  skip_existing: false
+    tags: true
+  skip_existing: true
 

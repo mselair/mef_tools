@@ -1,3 +1,11 @@
+.. image:: https://travis-ci.org/xmival00/MEF_Tools.svg?branch=master
+    :target: https://pypi.org/project/mselair-aisc/
+
+.. image:: https://readthedocs.org/projects/mef-tools/badge/?version=latest
+    :target: https://mef-tools.readthedocs.io/en/latest/?badge=latest
+
+
+
 MEF_Tools
 ----------------
 
@@ -8,12 +16,17 @@ This package provides tools for easier `Multiscale Electrophysiology Format (MEF
 `pymef <https://github.com/msel-source/meflib>`_ is a Python wrapper for meflib. See `documentation <https://pymef.readthedocs.io/en/latest/>`_.
 
 
+--------------------------------------------------------------------------------------------------
+
 Source
 ----------------
 
 * Brinkmann BH, Bower MR, Stengel KA, Worrell GA, Stead M. Large-scale electrophysiology: acquisition, compression, encryption, and storage of big data. J Neurosci Methods. 2009;180(1):185‐192. doi:10.1016/j.jneumeth.2009.03.022
 
 * `Repository <https://github.com/msel-source/meflib>`_
+
+--------------------------------------------------------------------------------------------------
+
 
 Example
 ----------------
@@ -91,16 +104,17 @@ Example
         signals.append(x)
     
 
+-------------------------------------------------------------------------------------------------------------
+
 Installation
 ----------------
 
 See installation instructions `INSTALL.md <https://github.com/xmival00/MEF_Tools/blob/master/INSTALL.md>`_.
 
+------------------------------------------------------------------------------------------------------------
 
 License
 ----------------
 
 This software is licensed under the Apache-2.0 License. See `LICENSE <https://github.com/xmival00/MEF_Tools/blob/master/LICENSE>`_ file in the root directory of this project.
-
-
 

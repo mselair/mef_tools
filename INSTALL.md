@@ -2,6 +2,8 @@
 
 Download this repository into a folder.
 
+## Option 1
+
 ### Step 1
 
 Open command line where you want to download this repository and download it.
@@ -33,3 +35,12 @@ bash setup.sh
 
 ### Step 4
 Remove the folder
+
+
+## Option 2
+```bash
+pip install mef-tools
+```
+
+
+

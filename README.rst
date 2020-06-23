@@ -1,5 +1,5 @@
 MEF_Tools
-^^^^^^^^^^^^^^^
+"""""""""
 
 This package provides tools for easier `Multiscale Electrophysiology Format (MEF) <https://doi.org/10.1016%2Fj.jneumeth.2009.03.022>`_ data file saving and reading. See an example below. 
 
@@ -9,14 +9,14 @@ This package provides tools for easier `Multiscale Electrophysiology Format (MEF
 
 
 Source
-^^^^^^^^^^^
+"""""""""
 
 * Brinkmann BH, Bower MR, Stengel KA, Worrell GA, Stead M. Large-scale electrophysiology: acquisition, compression, encryption, and storage of big data. J Neurosci Methods. 2009;180(1):185‐192. doi:10.1016/j.jneumeth.2009.03.022
 
 * `Repository <https://github.com/msel-source/meflib>`_
 
 Example
-^^^^^^^^^^
+"""""""""
 
 
 .. code-block:: python
@@ -91,4 +91,16 @@ Example
         signals.append(x)
     
 
- 
+Installation
+"""""""""""""""
+
+For install instructions see <https://github.com/xmival00/MEF_Tools/blob/master/INSTALL.md>`_.
+
+
+ License
+"""""""""
+
+This software is licensed under the Mayo Foundation for Medical Education and Research (MFMER). See `LICENSE <https://github.com/xmival00/MEF_Tools/blob/master/LICENSE>`_ file in the root directory of this project.
+
+
+

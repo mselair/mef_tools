@@ -13,6 +13,6 @@ deploy:
     secure: gLdRexwep8QRf5fUsm9evBeiuW0mn+HmSYhpig2/M+XRen3RCI9t2Xe18KBYZNj9q2c7mYryhQ8FYZVzP+SKl14ITlfxYE1kpWetIuSJOR+FY+VGklTq2g374RyfopxaST4w4QPZIwEjIDuk0C+REJhoOZvnW7kcULWo/hx+TdtFFoWxigT343koSVUlUddoDacOIYv/h0GhF8TyNM8KWl8jaTaFIXo4wbu7kalLlaUuBMqdtuWTXwPKI0/GP/UleK90GwtDGZ5HcqzrcWe1G+zfPLLlL3GYHyEna+Ko4/4dF7fHD5myEZh95TYNdUZ0hV7zUImdlZ6iXcfziWEFFO6iUsobLHEtLEukhCEl55/a3U7MZzh9SKiBnbgSQkpjhOL0hxBlnlhQpMhiViS78xSplkBIrpfwfUDCJqnhPVaWlhfHPPWv95K9Z5rceyNcd7NFnk75BsTvoNgw8/Lax1ymwJqcnVEM4q/hC7U9bsa5Uk+jFuK9Gm/mhNBCL/foSueiqSFoA+qf9Xi5Xb+fLn999vgpjSttakur9CBKBJYbV63DmDSLEBUy/237D8J2ZOgX0stHcUXjhuV+WG5VygkCtlEjW/4P6iexpp2PND2O0O6HilD25u9L45XRGdY0brgV5DMttUWtvPYgg5peTr/XCX+DnPuk2hP5uUc7JMk=
   skip_cleanup: true
   on:
-    tags: true
-  skip_existing: true
+    tags: false
+  skip_existing: false
 

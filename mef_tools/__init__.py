@@ -6,6 +6,6 @@
 
 
 from .io import *
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 # Log here changes in versions

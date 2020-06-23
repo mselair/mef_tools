@@ -1,7 +1,7 @@
-`MEF <https://doi.org/10.1016%2Fj.jneumeth.2009.03.022>`_
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+MEF_Tools
+^^^^^^^^^^^^^^^
 
-This package provides two objects for easier `Multiscale Electrophysiology Format (MEF) <https://doi.org/10.1016%2Fj.jneumeth.2009.03.022>`_ data file saving and reading. See an example below.
+This package provides tools for easier `Multiscale Electrophysiology Format (MEF) <https://doi.org/10.1016%2Fj.jneumeth.2009.03.022>`_ data file saving and reading. See an example below. 
 
 `Multiscale Electrophysiology Format (MEF) <https://doi.org/10.1016%2Fj.jneumeth.2009.03.022>`_ is a data file format designed for storing electro-physiological signals. MEF was developed to handle the large amounts of data produced by large-scale electro-physiology in human and animal subjects. See original `GitHub repository <https://github.com/msel-source/meflib>`_.
 

@@ -1,0 +1,46 @@
+mef_tools
+============
+.. toctree::
+   :numbered:
+
+
+mef_tools.io
+----------------
+
+.. automodule:: mef_tools.io
+   :members:
+   :undoc-members:
+
+
+mef_tools.client
+----------------
+
+.. automodule:: mef_tools.client
+   :members:
+   :undoc-members:
+
+
+mef_tools.server
+----------------
+
+.. automodule:: mef_tools.server
+   :members:
+   :undoc-members:
+
+mef_tools.db
+----------------
+
+.. automodule:: mef_tools.db
+   :members:
+   :undoc-members:
+
+
+
+ReadmeMe
+===========
+.. include:: MEF_Tools.README.rst
+
+
+LICENSE
+=========
+.. include:: ../../LICENSE

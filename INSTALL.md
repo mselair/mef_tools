@@ -1,3 +1,5 @@
+# INSTALL
+
 Download this repository into a folder.
 
 ### Step 1

@@ -94,7 +94,7 @@ Example
 Installation
 """""""""""""""
 
-See `installation instructions <https://github.com/xmival00/MEF_Tools/blob/master/INSTALL.md>`_.
+See installation instructions `INSTALL.md <https://github.com/xmival00/MEF_Tools/blob/master/INSTALL.md>`_.
 
 
 License

@@ -10,7 +10,7 @@ import numpy as np
 from shutil import rmtree
 from pymef import mef_session
 from pymef.mef_session import MefSession
-
+import pandas as pd
 from AISC.utils.types import ObjDict
 
 
@@ -110,7 +110,7 @@ class MefWritter:
         if overwrite is True:
             if os.path.exists(session_path):
                 rmtree(session_path)
-                time.sleep(2) # wait till all files are gone. Problems when many files, especially on a network drive
+                time.sleep(3) # wait till all files are gone. Problems when many files, especially on a network drive
             self.session = MefSession(session_path, password, False, True)
 
         else:
@@ -146,7 +146,6 @@ class MefWritter:
                                                self.samps_mef_block,
                                                data)
 
-
     def append_block(self, data=None, channel=None, start_stamp=None, end_stamp=None, pwd1=None, pwd2=None):
         self.session.append_mef_ts_segment_data(channel,
                                       int(0),
@@ -157,3 +156,137 @@ class MefWritter:
                                       self.samps_mef_block,
                                       data)
 
+
+# Functions
+def voss(nrows, ncols=32):
+    """Generates pink noise using the Voss-McCartney algorithm.
+
+    nrows: number of values to generate
+    rcols: number of random sources to add
+
+    returns: NumPy array
+    """
+    array = np.empty((nrows, ncols))
+    array.fill(np.nan)
+    array[0, :] = np.random.random(ncols)
+    array[:, 0] = np.random.random(nrows)
+
+    # the total number of changes is nrows
+    n = nrows
+    cols = np.random.geometric(0.5, n)
+    cols[cols >= ncols] = 0
+    rows = np.random.randint(nrows, size=n)
+    array[rows, cols] = np.random.random(n)
+
+    df = pd.DataFrame(array)
+    df.fillna(method='ffill', axis=0, inplace=True)
+    total = df.sum(axis=1)
+
+    return total.values
+
+
+def create_pink_noise(fs, seg_len, low_bound, up_bound):
+    n = fs * seg_len
+    if n > 20 * 1e6:
+        raise ValueError('too many samples to generate')
+    # if
+    data = voss(n)
+    norm_data = scale_signal(data, low_bound, up_bound)
+    return norm_data
+
+
+def scale_signal(data, a, b):
+    min_x = np.min(data)
+    data_range = np.max(data) - min_x
+    temp_arr = (data - min_x) / data_range
+    new_range = b - a
+    return temp_arr * new_range + a
+
+
+def check_int32_dynamic_range(x_min, x_max, alpha):
+    min_value = np.iinfo(np.int32).min
+    if (x_min * alpha < min_value) & (x_max * alpha > np.iinfo(np.int32).max):
+        return False
+    else:
+        return True
+
+
+def infer_conversion_factor(data):
+    mean_digg_abs = np.mean(np.abs(np.diff(data)))
+    precision = 1
+    # this works for small z-scored data, for high dynamic range input needs to be decreased again (saturation)
+    while mean_digg_abs < 100:
+        precision += 1
+        mean_digg_abs *= 10
+
+    data_max = np.max(data)
+    data_min = np.min(data)
+    alpha = 10 ** precision
+    while (not check_int32_dynamic_range(data_min, data_max, alpha)) & (precision != 0):
+        precision -= 1
+        print(f" WARNING: dynamic range saturated, precision decreased to {precision}")
+        alpha = 10 ** precision
+    return precision
+
+
+def convert_data_to_int32(data, precision=None):
+    if precision is None:
+        print(f"Info: convert data to int32:  precision is not given, infering...")
+        precision = infer_conversion_factor(data)
+        print(f"Info: precision set to {precision}")
+    elif (precision < 0) | (not (isinstance(precision, int))):
+        print(f"WARNING: precision set to incorrect value, it is set to default (3)")
+        precision = 3
+
+    deciround = np.round(data, decimals=precision)
+    data_int32 = np.empty(shape=deciround.shape, dtype=np.int32)
+    data_int32[:] = 10 ** precision * (deciround)
+    return data_int32
+
+
+def find_intervals_binary_vector(input_bin_vector, fs, start_uutc, samples_of_nans_allowed=None):
+    if samples_of_nans_allowed is None:
+        samples_of_nans_allowed = fs
+
+    vector = np.concatenate((np.array([0]), input_bin_vector, np.array([0])))
+    diff_vector = np.diff(vector)
+    # find start and stop position of intervals with continuous ones
+    t0 = np.where(diff_vector == 1)[0]
+    t1 = np.where(diff_vector == -1)[0]
+
+    # merge neighbors with gap les than samples_of_nans_allowed
+    segments = pd.DataFrame()
+    segments['start_samples'] = t0
+    segments['stop_samples'] = t1
+
+    # merge neighbors ( find overlaps and get the rest (noverlaps))
+    tmp_vec = np.array(segments.iloc[:-1, 1] + samples_of_nans_allowed) > np.array(segments.iloc[1:, 0])
+    diff_vector = np.concatenate((np.array([0]), tmp_vec, np.array([0])))
+    bin_det = diff_vector[1:]
+    diff = np.diff(diff_vector)
+    # get overlap intervals
+    t0 = np.where(diff == 1)[0]
+    t1 = set(np.where(diff == -1)[0])
+    # get noverlaps segments
+    t3 = set(np.where(bin_det == 0)[0])
+    t_noverlap = np.sort(list(t3 - (t3 & t1)))
+    t1 = np.sort(list(t1))
+
+    # overlap segments (nans inside this interval will be stored)
+    overlap_starts = np.array(segments.loc[t0, 'start_samples'])
+    overlap_ends = np.array(segments.loc[t1, 'stop_samples'])
+
+    # lonely segments
+    lonely_segments = segments.loc[t_noverlap, :]
+
+    # final fragment segments
+    connected_detected_intervals = pd.DataFrame(columns=['start_samples', 'stop_samples', ])
+    connected_detected_intervals['start_samples'] = overlap_starts.astype(int)
+    connected_detected_intervals['stop_samples'] = overlap_ends.astype(int)
+    connected_detected_intervals = connected_detected_intervals.append(lonely_segments, ignore_index=True)
+    connected_detected_intervals = connected_detected_intervals.sort_values(by='start_samples').reset_index(drop=True)
+
+    # calculate uutc time of intervals
+    connected_detected_intervals['start_uutc'] = (connected_detected_intervals['start_samples'] / fs * 1e6 + start_uutc).astype(int)
+    connected_detected_intervals['stop_uutc'] = (connected_detected_intervals['stop_samples'] / fs * 1e6 + start_uutc).astype(int)
+    return connected_detected_intervals

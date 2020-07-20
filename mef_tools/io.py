@@ -109,12 +109,7 @@ class MefWritter:
         self.bi = None
         self.channel_info = {}
         self._max_nans_written = 'fs'
-#        self.recording_offset = None
-#        self.channels = None
-        # TODO mef_bock infered/setup
-       # self.samps_mef_block = 300
-
-
+#
         self.section3_dict = {
                   'recording_time_offset': np.nan,
                   'DST_start_time': 0,
@@ -177,19 +172,22 @@ class MefWritter:
         for ch in self.channel_info.keys():
             self.channel_info[ch]['n_segments'] = len(self.session.session_md['time_series_channels'][ch]['segments'])
             self.channel_info[ch]['mef_block_len'] = int(self.get_mefblock_len(self.channel_info[ch]['fsamp'][0]))
-            # TODO only one write method (should handle fragmenting and append/create)
-    # TODO write method handling the fragmenting of data and writing
+
     # TODO write method of check data integrity upon write
     # TODO write progress bar
-    # TODO write method which checks/reload actual metadata
-    def write_data(self, data_write, channel, start_uutc, end_uutc, sampling_freq, precision=None, new_segment=False,
+    def write_data(self, data_write, channel, start_uutc, sampling_freq, end_uutc=None, precision=None, new_segment=False,
                    discont_handler=True):
+
+        # infer end_uutc from data
+        if end_uutc is None:
+            end_uutc = int(start_uutc + (len(data_write)/sampling_freq * 1e6))
+
         # check times are correct
         if end_uutc < start_uutc:
             print(f"WARNING: incorrect End uutc time {end_uutc} is before beginning: {start_uutc}")
             return None
 
-        # check if any data exists
+        # check if any data exists -> apend or create new segment
         if channel in self.channel_info.keys():
             # check if it is possible to write with configuration provided
             if start_uutc < self.channel_info[channel]['end_time'][0]:
@@ -205,29 +203,13 @@ class MefWritter:
             # convert data to int32
             data_converted = convert_data_to_int32(data_write, precision=precision)
 
-            # discont handler writes fragmented intervals ( skip nans greater than specified)
-            if discont_handler:
-                if self.max_nans_written == 'fs':
-                    max_nans = sampling_freq
-                else:
-                    max_nans = self.max_nans_written
-
-                input_bin_vector = ~np.isnan(data_write)
-                df_intervals = find_intervals_binary_vector(input_bin_vector, sampling_freq, start_uutc, samples_of_nans_allowed=max_nans)
-
             # check new segment flag
             segment = self.channel_info[channel]['n_segments']
-            if new_segment:
-                self._create_segment(data=data_converted, channel=channel, start_uutc=start_uutc, end_uutc=end_uutc,
-                                     sampling_frequency=sampling_freq, segment=segment)
-            # append to last segment
-            else:
-                segment -= 1
-                self._append_block(data=data_converted, channel=channel, start_uutc=start_uutc, end_uutc=end_uutc, segment=segment)
 
         # new channel data with no previous data
         else:
             segment = 0
+            new_segment = True
             if precision is None:
                 precision = infer_conversion_factor(data_write)
 
@@ -235,8 +217,36 @@ class MefWritter:
             # convert data to int32
             self.channel_info[channel] = {'mef_block_len': self.get_mefblock_len(sampling_freq), 'ufact': [ufact]}
             data_converted = convert_data_to_int32(data_write, precision=precision)
-            self._create_segment(data=data_converted, channel=channel, start_uutc=start_uutc, end_uutc=end_uutc,
-                                 sampling_frequency=sampling_freq, segment=0)
+
+        # discont handler writes fragmented intervals ( skip nans greater than specified)
+        if discont_handler:
+            if self.max_nans_written == 'fs':
+                max_nans = sampling_freq
+            else:
+                max_nans = self.max_nans_written
+
+            input_bin_vector = ~np.isnan(data_write)
+            df_intervals = find_intervals_binary_vector(input_bin_vector, sampling_freq, start_uutc, samples_of_nans_allowed=max_nans)
+        else:
+            df_intervals = pd.DataFrame(data={'start_samples': 0, 'stop_samples': len(data_converted), 'start_uutc': start_uutc,
+                                              'stop_uutc': end_uutc}, index=[0])
+
+        if new_segment:
+            for i, row in df_intervals.iterrows():
+                data_part = data_converted[row['start_samples']:row['stop_samples']]
+                if i == 0:
+                    self._create_segment(data=data_part, channel=channel, start_uutc=row['start_uutc'], end_uutc=row['stop_uutc'],
+                                         sampling_frequency=sampling_freq, segment=segment)
+                else:
+                    self._append_block(data=data_part, channel=channel, start_uutc=row['start_uutc'], end_uutc=row['stop_uutc'],
+                                       segment=segment)
+        # append to a last segment
+        else:
+            segment -= 1
+            for i, row in df_intervals.iterrows():
+                data_part = data_converted[row['start_samples']:row['stop_samples']]
+                self._append_block(data=data_part, channel=channel, start_uutc=row['start_uutc'], end_uutc=row['stop_uutc'],
+                                   segment=segment)
 
         self._reload_session_info()
         return True
@@ -251,6 +261,7 @@ class MefWritter:
         self.section3_dict['recording_time_offset'] = int(start_uutc - 1e6)
         self.section2_ts_dict['sampling_frequency'] = sampling_frequency
         # recording time offset is fixed ?
+        # DEFAULT VALS FOR Segment 0
         if segment == 0:
             self.section3_dict['recording_time_offset'] = int(start_uutc - 1e6)
             self.section2_ts_dict['start_sample'] = 0
@@ -261,7 +272,7 @@ class MefWritter:
         self.section2_ts_dict['recording_duration'] = int((end_uutc - start_uutc) / 1e6)
         self.section2_ts_dict['units_conversion_factor'] = self.channel_info[channel]['ufact'][0]
 
-        print(f"INFO: writing data for channel-> {channel}, segment-> {segment}, fs: {sampling_frequency}, ufac:"
+        print(f"INFO: creating new segment data for channel: {channel}, segment: {segment}, fs: {sampling_frequency}, ufac:"
               f" {self.channel_info[channel]['ufact'][0]}, start: {start_uutc}, stop {end_uutc} ")
         self.session.write_mef_ts_segment_metadata(channel,
                                                    int(segment),
@@ -283,7 +294,7 @@ class MefWritter:
 
         if end_uutc < start_uutc:
             raise ValueError('End uutc timestamp lower than the start_uutc')
-        print(f"INFO: appending data for channel-> {channel}, segment-> {segment}, ufac:"
+        print(f"INFO: appending new data for channel: {channel}, segment: {segment}, ufac:"
               f" {self.channel_info[channel]['ufact'][0]}, start: {start_uutc}, stop {end_uutc} ")
         self.session.append_mef_ts_segment_data(channel,
                                                   int(segment),
@@ -307,6 +318,9 @@ class MefWritter:
 
     @max_nans_written.setter
     def max_nans_written(self, max_samples):
+        if (max_samples < 0) | (not (isinstance(max_samples, int))):
+            print("incorrect value, please provide positive int")
+            return
         self._max_nans_written = max_samples
 
 

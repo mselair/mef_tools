@@ -1,3 +1,7 @@
 
 .DS_Store
 /main.py
+/csv2mef.py
+/edf2mef.py
+/joinmat_to_mef.py
+/mat_to_mef.py

@@ -53,9 +53,11 @@ setuptools.setup(
         'scipy',
         'sqlalchemy',
         'pyzmq',
-        'mselair-aisc',
         'tqdm',
-        'sshtunnel'
+        'sshtunnel',
+        'mselair-aisc',
+        'pyedflib',
+
     ]
 )
 

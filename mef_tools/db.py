@@ -67,7 +67,8 @@ class DashboardDatabaseHandler:
         return False
 
     def _close_ssh(self):
-        self._close_ssh()
+        if self.check_ssh_connection():
+            self._ssh_tunnel.close()
 
     def open(self):
         if self._ssh_host:

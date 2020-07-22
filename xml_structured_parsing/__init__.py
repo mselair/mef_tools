@@ -5,14 +5,5 @@
 # LICENSE file in the root directory of this source tree.
 
 
-from .io import *
-__version__ = '0.0.2'
-
-import os
-# Check windows or linux and sets separator
-if os.name == 'nt': DELIMITER = '\\'
-else: DELIMITER = '/'
-
-
-
-# Log here changes in versions
+from xml_structured_parsing.XML_CVAT import parser_xml_CVAT
+from xml_structured_parsing.XML_CyberPSG import parser_xml_CyberPSG

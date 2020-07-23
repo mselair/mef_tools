@@ -96,7 +96,9 @@ class MefReader:
 
 
 class MefWriter:
-
+    """
+        MefWriter class is a high level util class for easy mef3 data writing.
+    """
     __version__ = '1.0.7'
 
     def __init__(self, session_path, overwrite=False, password1=None, password2=None):
@@ -244,7 +246,9 @@ class MefWriter:
             segment = 0
             new_segment = True
             if precision is None:
+                print('WARNING: precision is not specified, infering...')
                 precision = infer_conversion_factor(data_write)
+                print(f'INFO: precision set to {precision}')
 
             ufact = 0.1**precision
             # convert data to int32

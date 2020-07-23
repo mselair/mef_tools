@@ -11,8 +11,7 @@ from shutil import rmtree
 from pymef import mef_session
 from pymef.mef_session import MefSession
 import pandas as pd
-#from AISC.utils.types import ObjDict
-from copy import deepcopy
+from copy import deepcopy, copy
 
 SECTION2_TS_DICT = {
     'channel_description': b'ts_channel',
@@ -96,20 +95,23 @@ class MefReader:
         return self.session.read_ts_channels_uutc(channels_to_pick, [t_stamp1, t_stamp2])
 
 
-class MefWritter:
+class MefWriter:
 
-    __version__ = '1.0.0'
+    __version__ = '1.0.7'
 
     def __init__(self, session_path, overwrite=False, password1=None, password2=None):
-        # TODO overwrite - > new_session / appending to new session -> reading segments and info from written data -> this will limit
-        #  scale factor / write new channels
         # TODO handling annotations (records)
         self.pwd1 = password1
         self.pwd2 = password2
         self.bi = None
         self.channel_info = {}
+
+        # ------- properties ------
+        # maximal nans in continuous block to be stored in data and not indexed
         self._max_nans_written = 'fs'
-#
+        # units of data stored
+        self._data_units = b'uV'
+        # from pymef library
         self.section3_dict = {
                   'recording_time_offset': np.nan,
                   'DST_start_time': 0,
@@ -121,11 +123,10 @@ class MefWritter:
                   'recording_location': b'P'
             }
 
-
-        self.section2_ts_dict =   {
+        self.section2_ts_dict = {
                  'channel_description': b'ts_channel',
                  'session_description': b'ts_session',
-                 'recording_duration': np.nan,  # TODO:test 0 / None
+                 'recording_duration': np.nan,
                  'reference_description': b'None',
                  'acquisition_channel_number': 1,
                  'sampling_frequency': np.nan,
@@ -133,8 +134,8 @@ class MefWritter:
                  'low_frequency_filter_setting': 1,
                  'high_frequency_filter_setting': 10,
                  'AC_line_frequency': 0,
-                 'units_conversion_factor': 0.0001,
-                 'units_description': b'uV',
+                 'units_conversion_factor': 1.0,
+                 'units_description': copy(self._data_units),
                  'maximum_native_sample_value': 0.0,
                  'minimum_native_sample_value': 0.0,
                  'start_sample': 0,  # Different for segments
@@ -173,10 +174,42 @@ class MefWritter:
             self.channel_info[ch]['n_segments'] = len(self.session.session_md['time_series_channels'][ch]['segments'])
             self.channel_info[ch]['mef_block_len'] = int(self.get_mefblock_len(self.channel_info[ch]['fsamp'][0]))
 
-    # TODO write method of check data integrity upon write
-    # TODO write progress bar
     def write_data(self, data_write, channel, start_uutc, sampling_freq, end_uutc=None, precision=None, new_segment=False,
                    discont_handler=True):
+        """
+            General method for writing any data to the session. Method handles new channel data or appending to existing channel data
+            automatically. Discont handler
+            flag
+            can be used for
+            fragmentation to smaller intervals which
+            are written in sequence with nans intervals skipped.
+
+            Parameters
+            ----------
+            data_write : np.ndarray
+                data to be written, data will be scaled a translated to int32 automatically if precision parameter is not given
+            channel : str
+                name of the stored channel
+            start_uutc : int
+                uutc timestamp of the first sample
+            sampling_freq : int
+                only int sampling freq is supported
+            end_uutc : int, optional
+                end of the data uutc timestamp, if less data is provided than end_uutc - start_uutc nans gap will be inserted to the data
+            precision : int, optional
+                Number of floating point to be scaled above zero. Data are multiplied by 10**precision before writing and scale factor is
+                stored in metadata. used for transforming data to
+                int32, can be positive or 0 = no change
+                 in scale, only loss of decimals.
+            new_segment : bool, optional
+                if new mef3 segment should be created
+            discont_handler: bool, optional
+                disconnected segments will be stored in intervals if the gap in data is higher than max_nans_written property
+            Returns
+            -------
+            out : bool
+                True on success
+        """
 
         # infer end_uutc from data
         if end_uutc is None:
@@ -191,7 +224,7 @@ class MefWritter:
         if channel in self.channel_info.keys():
             # check if it is possible to write with configuration provided
             if start_uutc < self.channel_info[channel]['end_time'][0]:
-                print(' Start time provided is before end time of data already written to the session. Returning None')
+                print(' Given start time is before end time of data already written to the session. Returning None')
                 return None
             # NOTE fs can be different in the new segment but we dont work with different fs in the same channel
             if sampling_freq != self.channel_info[channel]['fsamp'][0]:
@@ -231,6 +264,7 @@ class MefWritter:
             df_intervals = pd.DataFrame(data={'start_samples': 0, 'stop_samples': len(data_converted), 'start_uutc': start_uutc,
                                               'stop_uutc': end_uutc}, index=[0])
 
+        print(f'INFO: total number of intervals to be written: {len(df_intervals)}')
         if new_segment:
             for i, row in df_intervals.iterrows():
                 data_part = data_converted[row['start_samples']:row['stop_samples']]
@@ -249,9 +283,11 @@ class MefWritter:
                                    segment=segment)
 
         self._reload_session_info()
+        print('INFO: data write method finished.')
         return True
 
     def _create_segment(self, data=None, channel=None, start_uutc=None, end_uutc=None, sampling_frequency=None, segment=0, ):
+
         if data.dtype != np.int32:
             raise AssertionError('[TYPE ERROR] - MEF file writer accepts only int32 signal datatype!')
 
@@ -322,6 +358,18 @@ class MefWritter:
             print("incorrect value, please provide positive int")
             return
         self._max_nans_written = max_samples
+
+    @property
+    def data_units(self):
+        return self._data_units
+
+    @data_units.setter
+    def data_units(self, units_str):
+        if (len(units_str) < 0) | (not (isinstance(units_str, str))):
+            print("incorrect value, please provide str with less than 20 chars")
+            return
+        self._data_units = str.encode(units_str, 'utf-8')
+        self.section2_ts_dict['units_description'] = copy(self._data_units)
 
 
 # Functions

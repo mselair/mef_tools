@@ -13,47 +13,6 @@ from pymef.mef_session import MefSession
 import pandas as pd
 from copy import deepcopy, copy
 
-SECTION2_TS_DICT = {
-    'channel_description': b'ts_channel',
-    'session_description': b'ts_session',
-    'recording_duration': np.nan,  # TODO:test 0 / None
-    'reference_description': b'None',
-    'acquisition_channel_number': 1,
-    'sampling_frequency': np.nan,
-    'notch_filter_frequency_setting': 0,
-    'low_frequency_filter_setting': 1,
-    'high_frequency_filter_setting': 10,
-    'AC_line_frequency': 0,
-    'units_conversion_factor': 1.0,
-    'units_description': b'uV',
-    'maximum_native_sample_value': 0.0,
-    'minimum_native_sample_value': 0.0,
-    'start_sample': 0,  # Different for segments
-    'number_of_blocks': 0,
-    'maximum_block_bytes': 0,
-    'maximum_block_samples': 0,
-    'maximum_difference_bytes': 0,
-    'block_interval': 0,
-    'number_of_discontinuities': 0,
-    'maximum_contiguous_blocks': 0,
-    'maximum_contiguous_block_bytes': 0,
-    'maximum_contiguous_samples': 0,
-    'number_of_samples': 0
-}
-
-SECTION3_TS_DICT = {
-                  'recording_time_offset': np.nan,
-                  'DST_start_time': 0,
-                  'DST_end_time': 0,
-                 # default Chicago timezone
-                  'GMT_offset': -6*3600,
-                  'subject_name_1': b'none',
-                  'subject_name_2': b'none',
-                  'subject_ID': b'None',
-                  'recording_location': b'P'
-            }
-
-
 
 class MefReader:
     __version__ = '1.0.0'
@@ -300,7 +259,7 @@ class MefWriter:
 
         self.section3_dict['recording_time_offset'] = int(start_uutc - 1e6)
         self.section2_ts_dict['sampling_frequency'] = sampling_frequency
-        # recording time offset is fixed ?
+
         # DEFAULT VALS FOR Segment 0
         if segment == 0:
             self.section3_dict['recording_time_offset'] = int(start_uutc - 1e6)
@@ -433,7 +392,7 @@ def check_int32_dynamic_range(x_min, x_max, alpha):
 def infer_conversion_factor(data):
     mean_digg_abs = np.nanmean(np.abs(np.diff(data)))
     precision = 1
-    # this works for smal z-scored data, for high dynamic range input needs to be decreased again (saturation)
+    # this works for small z-scored data, for high dynamic range input needs to be decreased again (saturation)
     while mean_digg_abs < 100:
         precision += 1
         mean_digg_abs *= 10
@@ -450,7 +409,7 @@ def infer_conversion_factor(data):
 
 def convert_data_to_int32(data, precision=None):
     if precision is None:
-        print(f"Info: convert data to int32:  precision is not given, infering...")
+        print(f"Info: convert data to int32:  precision is not given, inferring...")
         precision = infer_conversion_factor(data)
         print(f"Info: precision set to {precision}")
 

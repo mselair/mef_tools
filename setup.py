@@ -41,10 +41,13 @@ setuptools.setup(
     packages=setuptools.find_packages(),
 
     classifiers=[
-        "Programming Language :: Python :: 3.6",
+        "Development Status :: 3 - Alpha",
+        'Intended Audience :: Healthcare Industry',
+        'Intended Audience :: Science/Research',
         "License :: OSI Approved :: Apache Software License",
+        "Programming Language :: Python :: 3.6",
         "Operating System :: OS Independent",
-        "Development Status :: 3 - Alpha"
+        'Topic :: Scientific/Engineering :: Medical Science Apps.'
     ],
     python_requires='>=3.6',
     install_requires =[

@@ -45,60 +45,79 @@ Example
     # numpy - if anaconda conda install -c anaconda numpy; else pip install numpy
     # pandas - same as numpy
     
-    import pandas as pd
+    # imports
     import numpy as np
-    from datetime import datetime, timedelta
-    from AISC.MEF.io import MEF_READER, MEF_WRITTER
-    
-    path_file_from = '/Volumes/Hydrogen/filip/Shared/239_monitor_20200520_1639.csv'
-    path_file_to = '/Users/m220339/Desktop/239_monitor_20200520_1639.mefd'
-    
-    
-    # read data
-    df = pd.read_csv(path_file_from, header=2)
-    
-    # read start measuring stamp
-    date_str_format = '%Y/%m/%d %H:%M'
-    with open(path_file_from, 'r') as fid:
-        txt = fid.read(100).splitlines()
-        date_str = txt[1]
-        start_datetime = datetime.strptime(date_str, date_str_format)
-    
-    # add ms offset to the stamp
-    start_datetime += timedelta(milliseconds=float(df['Time(ms)'][0]))
-    
-    # get samplimng frequency
-    fs = int(1 / (np.diff(np.array(df['Time(ms)'])).mean() / 1e3)) # must be integer - otherwise resample
-    
-    # end timestamp
-    end_datetime = start_datetime + timedelta(milliseconds=float(df.iloc[-1]['Time(ms)']) - float(df['Time(ms)'][0]))
-    
+    from mef_tools.io import MefWriter, MefReader, create_pink_noise
+    import os
+
+    # path to data
+    session_name = 'session'
+    session_path = os.getcwd() + f'/{session_name}.mefd'
+    mef_session_path = session_path
+
+    # define how much is written
+    secs_to_write = 30
+
+    # define start of data uutc in uUTC time
+    start_time = 1578715810000000
+    # define end of data in uUTC time (optional) if None it is inferred from start_time and number samples + fs
+    end_time = int(start_time + 1e6*secs_to_write)
+
     # passwords
     pass1 = 'pass1'
     pass2 = 'pass2'
-    
-    Writter = MEF_WRITTER(path_file_to, password=pass2, overwrite=True)
-    
-    units_conversion_factor = 1e-5
-    Writter.section2_ts_dict['units_conversion_factor'] = units_conversion_factor
-    channels = list(df.keys())[1:]
-    for key in channels:
-        data = np.array(df[key])
-        data = np.round(data / units_conversion_factor).astype(np.int32)
-    
-        Writter.create_segment(data=data,
-                               channel=key,
-                               start_stamp=int(start_datetime.timestamp()*1e6),
-                               end_stamp=int(end_datetime.timestamp()*1e6),
-                               sampling_frequency=fs,
-                               pwd1=pass1,
-                               pwd2=pass2
-                               )
-    
-    Writter.session.close()
-    
-    
-    Reader = MEF_READER(path_file_to, password=pass2)
+
+    # overwrite flag - delete all session with the same path
+    writer = MefWriter(session_path, overwrite=True, password1=pass1, password2=pass2)
+
+    # property max nans in continuous block set (default is equal to fs)
+    writer.max_nans_written = 100
+    # property units of data - default uV
+    writer.data_units = 'mV'
+
+    # create test data with fs 500 Hz and dynamic range <-10; 10>
+    fs = 500
+    low_b = -10
+    up_b = 10
+
+    data_to_write = create_pink_noise(fs, secs_to_write, low_b, up_b)
+
+    # channel name
+    channel = 'channel_1'
+
+    # precision - how many floating points will be scaled up to int. e.g. sample with float = 0.001 with precision 3 -> will be stored as int
+    # = 1 and scaling factor will be 0.001. This will be automatically set if not specified and no data exist with the same channel name)
+    precision = 3
+    writer.write_data(data_to_write, channel, start_time, fs, precision=precision)
+
+    # append new data - precision is now fixed by the first data written
+    secs_to_append = 5
+    discont_length = 3
+    append_time = end_time + int(discont_length*1e6)
+    append_end = int(append_time + 1e6*secs_to_append)
+    data = create_pink_noise(fs, secs_to_append, low_b, up_b)
+    del writer
+
+    # create a new writer and append to previous data
+    writer2 = MefWriter(session_path, overwrite=False, password1=pass1, password2=pass2)
+    # new data are appended to the previous data
+    writer2.write_data(data, channel, append_time, fs)
+
+    # new segment - same call just flag is changed
+    secs_to_write_seg2 = 10
+    gap_time = 3.36*1e6
+    newseg_time = append_end + int(gap_time)
+    newseg_end = int(newseg_time + 1e6*secs_to_write_seg2)
+    data = create_pink_noise(fs, secs_to_write_seg2, low_b, up_b)
+    data[30:540] = np.nan
+    data[660:780] = np.nan
+    writer2.write_data(data, channel, newseg_time, fs, new_segment=True, )
+
+    # inferred precision
+    channel = 'channel_2'
+    writer2.write_data(data, channel, newseg_time, fs, new_segment=True, )
+
+    Reader = MefReader(path_file_to, password=pass2)
     signals = []
     
     for idx in range(Reader.bi.__len__()):

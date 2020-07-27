@@ -5,5 +5,3 @@
 # LICENSE file in the root directory of this source tree.
 
 
-from xml_structured_parsing.XML_CVAT import parser_xml_CVAT
-from xml_structured_parsing.XML_CyberPSG import parser_xml_CyberPSG

@@ -1,6 +1,6 @@
 from shutil import rmtree
 from unittest import TestCase
-from mef_tools.io import MefWriter, create_pink_noise, check_data_integrity
+from mef_tools.io import MefWriter, MefReader, create_pink_noise, check_data_integrity
 import os
 import numpy as np
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -48,7 +48,7 @@ class TestMefWriter(TestCase):
         write_data_nans = np.isnan(test_data_1)
 
         self.assertTrue(np.array_equal(read_data_nans, write_data_nans))
-        self.assertTrue(check_data_integrity(test_data_1, read_data, precision ))
+        self.assertTrue(check_data_integrity(test_data_1, read_data, precision))
         # append new data
         secs_to_append = 5
         discont_length = 1
@@ -135,3 +135,56 @@ class TestMefWriter(TestCase):
         write_data_nans = np.isnan(test_data_5)
         self.assertTrue(np.array_equal(read_data_nans, write_data_nans))
         self.assertTrue(np.allclose(test_data_5[~write_data_nans], read_data[~read_data_nans], atol=0.1 ** (precision - 1)))
+
+
+class TestMefReader(TestCase):
+    def setUp(self):
+        session_name = 'test_session'
+        self.session_path = f'{basedir}/{session_name}.mefd'
+        self.pass1 = 'pass1'
+        self.pass2 = 'pass2'
+        self.mef_writer = MefWriter(session_path=self.session_path, overwrite=True, password1=self.pass1, password2=self.pass2)
+
+    def tearDown(self):
+        del self.mef_writer
+        rmtree(self.session_path)
+
+
+    def test_write_data(self):
+        # multiple write test called
+        # define how much is written
+        secs_to_write = 30
+        secs_to_seg2 = 5
+
+        # define start of data uutc in uUTC time
+        start_time = 1578715810000000
+        # define end of data in uUTC time
+        end_time = int(start_time + 1e6 * secs_to_write)
+
+        writer = self.mef_writer
+        writer.max_nans_written = 100
+
+        # create test data
+        fs = 500
+        low_b = -10
+        up_b = 10
+        precision = 3
+        test_data_1 = create_pink_noise(fs, secs_to_write, low_b, up_b)
+        channel = 'test_channel_1'
+        writer.write_data(test_data_1, channel, start_time, fs)
+        # check stored data and check nans
+
+        reader = MefReader(self.session_path, self.pass2)
+        read_raw_data = reader.get_raw_data(channel, [start_time, end_time])
+        read_data = reader.get_data(channel, [start_time, end_time])
+        self.assertTrue(check_data_integrity(test_data_1, read_data, 0))
+
+
+
+
+
+
+
+
+
+

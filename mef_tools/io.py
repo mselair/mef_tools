@@ -15,17 +15,51 @@ from copy import deepcopy, copy
 
 
 class MefReader:
-    __version__ = '1.0.0'
-
-    def __init__(self, mef_path, password=''):
-        self.session = mef_session.MefSession(mef_path, password, True)
+    __version__ = '2.0.0'
+    def __init__(self, session_path, password2=None):
+        self.session = mef_session.MefSession(session_path, password2, True)
         self.bi = self.session.read_ts_channel_basic_info()
-        self.channels = [channel['name'] for channel in self.bi]
 
+        for ch_info in self.bi:
+            if ch_info['fsamp'].__len__() > 1:
+                raise NotImplementedError('[ERROR]: File contains more sampling frequencies '
+                                          'for a single channels. This feature is not implemented.')
     def __del__(self):
+        self.close()
+
+    @property
+    def channels(self):
+        return [ch_info['name'] for ch_info in self.bi]
+
+    @property
+    def properties(self):
+        properties = []
+        for ch_info in self.bi:
+            properties += list(ch_info.keys())
+        return list(np.unique(properties))
+
+    def get_property_value(self, property_name, channel=''):
+        if isinstance(channel, type(None)):
+            return [ch_info[property_name] for ch_info in self.bi]
+
+        for ch_info in self.bi:
+            if ch_info['name'] == channel:
+                return ch_info[property_name]
+        return None
+
+    def get_channel_info(self, channel=None):
+        if isinstance(channel, type(None)):
+            return self.bi
+
+        for ch_info in self.bi:
+            if ch_info['name'] == channel:
+                return ch_info
+        return None
+
+    def close(self):
         self.session.close()
 
-    def get_data(self, channels, t_stamp1, t_stamp2):
+    def get_raw_data(self, channels, t_stamp1=None, t_stamp2=None):
         channels_to_pick = []
 
         if isinstance(channels, int):
@@ -51,14 +85,28 @@ class MefReader:
                     if (not channel in channels_to_pick) and channel in self.channels:
                         channels_to_pick.append(channel)
 
+        if isinstance(t_stamp1, type(None)):
+            t_stamp1 = min([self.get_property_value('start_time', channel) for channel in self.channels if channel in channels_to_pick])
+
+        if isinstance(t_stamp2, type(None)):
+            t_stamp2 = min([self.get_property_value('end_time', channel) for channel in self.channels if channel in channels_to_pick])
+
         return self.session.read_ts_channels_uutc(channels_to_pick, [t_stamp1, t_stamp2])
 
+    def get_data(self, channels, t_stamp1=None, t_stamp2=None):
+        data = self.get_raw_data(channels, t_stamp1, t_stamp2)
+        if isinstance(channels, list):
+            for idx, ch_name in enumerate(channels):
+                data[idx] = data[idx].astype(np.float) * self.get_channel_info(ch_name)['ufact'][0]
+        else:
+            data = data[0].astype(np.float) * self.get_channel_info(channels)['ufact'][0]
+        return data
 
 class MefWriter:
     """
         MefWriter class is a high level util class for easy mef3 data writing.
     """
-    __version__ = '1.0.7'
+    __version__ = '2.0.0'
 
     def __init__(self, session_path, overwrite=False, password1=None, password2=None):
         # TODO handling annotations (records)
@@ -362,7 +410,6 @@ def voss(nrows, ncols=32):
 
     return total.values
 
-
 def create_pink_noise(fs, seg_len, low_bound, up_bound):
     n = fs * seg_len
     if n > 20 * 1e6:
@@ -372,7 +419,6 @@ def create_pink_noise(fs, seg_len, low_bound, up_bound):
     norm_data = scale_signal(data, low_bound, up_bound)
     return norm_data
 
-
 def scale_signal(data, a, b):
     min_x = np.min(data)
     data_range = np.max(data) - min_x
@@ -380,14 +426,12 @@ def scale_signal(data, a, b):
     new_range = b - a
     return temp_arr * new_range + a
 
-
 def check_int32_dynamic_range(x_min, x_max, alpha):
     min_value = np.iinfo(np.int32).min
     if (x_min * alpha < min_value) & (x_max * alpha > np.iinfo(np.int32).max):
         return False
     else:
         return True
-
 
 def infer_conversion_factor(data):
     mean_digg_abs = np.nanmean(np.abs(np.diff(data)))
@@ -406,7 +450,6 @@ def infer_conversion_factor(data):
         alpha = 10 ** precision
     return precision
 
-
 def convert_data_to_int32(data, precision=None):
     if precision is None:
         print(f"Info: convert data to int32:  precision is not given, inferring...")
@@ -421,7 +464,6 @@ def convert_data_to_int32(data, precision=None):
     data_int32 = np.empty(shape=deciround.shape, dtype=np.int32)
     data_int32[:] = 10 ** precision * (deciround)
     return data_int32
-
 
 def find_intervals_binary_vector(input_bin_vector, fs, start_uutc, samples_of_nans_allowed=None):
     if samples_of_nans_allowed is None:
@@ -470,10 +512,11 @@ def find_intervals_binary_vector(input_bin_vector, fs, start_uutc, samples_of_na
     connected_detected_intervals['stop_uutc'] = (connected_detected_intervals['stop_samples'] / fs * 1e6 + start_uutc).astype(int)
     return connected_detected_intervals
 
-
 def check_data_integrity(original_data, converted_data, precision):
 
     coverted_float = 0.1**precision*(converted_data)
     idx_numbers = ~np.isnan(original_data)
     result_bin = np.allclose(coverted_float[idx_numbers], original_data[idx_numbers], atol=0.1**(precision-1))
     return result_bin
+
+

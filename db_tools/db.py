@@ -11,7 +11,7 @@ from sqlalchemy.pool import NullPool
 from sshtunnel import SSHTunnelForwarder
 
 
-class DashboardDatabaseHandler:
+class DatabaseHandler:
     __version__ = '0.0.1'
     def __init__(self, sql_host=None, sql_db_name=None, sql_user=None, sql_pwd=None, sql_port='3360', ssh_host=None, ssh_user=None, ssh_pwd=None, ssh_port='22'):
         self._ssh_host = ssh_host
@@ -89,7 +89,7 @@ class DashboardDatabaseHandler:
     def __del__(self):
         self.close()
 
-class SessionFinder(DashboardDatabaseHandler):
+class SessionFinder(DatabaseHandler):
     __version__ = '0.0.1'
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

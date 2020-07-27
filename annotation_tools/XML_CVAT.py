@@ -5,7 +5,7 @@
 # LICENSE file in the root directory of this source tree.
 
 
-from xml_structured_parsing.myXML import myXML, DELIMITER, ET
+from annotation_tools.xml_structured_parsing.myXML import myXML, DELIMITER, ET
 
 
 def parser_xml_CVAT(path):

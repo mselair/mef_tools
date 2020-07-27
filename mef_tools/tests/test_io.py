@@ -220,7 +220,6 @@ class TestMefReader(TestCase):
         del self.mef_writer
         rmtree(self.session_path)
 
-
     def test_read_data(self):
         # multiple write test called
         # define how much is written

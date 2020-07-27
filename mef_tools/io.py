@@ -16,6 +16,7 @@ from copy import deepcopy, copy
 
 class MefReader:
     __version__ = '2.0.0'
+
     def __init__(self, session_path, password2=None):
         self.session = mef_session.MefSession(session_path, password2, True)
         self.bi = self.session.read_ts_channel_basic_info()
@@ -24,6 +25,7 @@ class MefReader:
             if ch_info['fsamp'].__len__() > 1:
                 raise NotImplementedError('[ERROR]: File contains more sampling frequencies '
                                           'for a single channels. This feature is not implemented.')
+
     def __del__(self):
         self.close()
 
@@ -109,6 +111,7 @@ class MefReader:
         else:
             data = data[0].astype(np.float) * self.get_channel_info(channels)['ufact'][0]
         return data
+
 
 class MefWriter:
     """
@@ -487,6 +490,7 @@ def voss(nrows, ncols=32):
 
     return total.values
 
+
 def create_pink_noise(fs, seg_len, low_bound, up_bound):
     n = fs * seg_len
     if n > 20 * 1e6:
@@ -496,6 +500,7 @@ def create_pink_noise(fs, seg_len, low_bound, up_bound):
     norm_data = scale_signal(data, low_bound, up_bound)
     return norm_data
 
+
 def scale_signal(data, a, b):
     min_x = np.min(data)
     data_range = np.max(data) - min_x
@@ -503,12 +508,14 @@ def scale_signal(data, a, b):
     new_range = b - a
     return temp_arr * new_range + a
 
+
 def check_int32_dynamic_range(x_min, x_max, alpha):
     min_value = np.iinfo(np.int32).min
     if (x_min * alpha < min_value) & (x_max * alpha > np.iinfo(np.int32).max):
         return False
     else:
         return True
+
 
 def infer_conversion_factor(data):
     mean_digg_abs = np.nanmean(np.abs(np.diff(data)))
@@ -527,6 +534,7 @@ def infer_conversion_factor(data):
         alpha = 10 ** precision
     return precision
 
+
 def convert_data_to_int32(data, precision=None):
     if precision is None:
         print(f"Info: convert data to int32:  precision is not given, inferring...")
@@ -541,6 +549,7 @@ def convert_data_to_int32(data, precision=None):
     data_int32 = np.empty(shape=deciround.shape, dtype=np.int32)
     data_int32[:] = 10 ** precision * (deciround)
     return data_int32
+
 
 def find_intervals_binary_vector(input_bin_vector, fs, start_uutc, samples_of_nans_allowed=None):
     if samples_of_nans_allowed is None:
@@ -588,6 +597,7 @@ def find_intervals_binary_vector(input_bin_vector, fs, start_uutc, samples_of_na
     connected_detected_intervals['start_uutc'] = (connected_detected_intervals['start_samples'] / fs * 1e6 + start_uutc).astype(int)
     connected_detected_intervals['stop_uutc'] = (connected_detected_intervals['stop_samples'] / fs * 1e6 + start_uutc).astype(int)
     return connected_detected_intervals
+
 
 def check_data_integrity(original_data, converted_data, precision):
 

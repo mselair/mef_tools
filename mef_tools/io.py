@@ -38,12 +38,20 @@ class MefReader:
             properties += list(ch_info.keys())
         return list(np.unique(properties))
 
-    def get_property_value(self, property_name, channel=''):
+    def get_property(self, property_name, channel=None):
         if isinstance(channel, type(None)):
-            return [ch_info[property_name] for ch_info in self.bi]
+            props = []
+            for ch_info in self.bi:
+                if ch_info[property_name].__len__() == 1:
+                    props.append(ch_info[property_name][0])
+                else:
+                    props.append(ch_info[property_name])
+            return props
 
         for ch_info in self.bi:
             if ch_info['name'] == channel:
+                if ch_info[property_name].__len__() == 1:
+                    return ch_info[property_name][0]
                 return ch_info[property_name]
         return None
 
@@ -86,10 +94,10 @@ class MefReader:
                         channels_to_pick.append(channel)
 
         if isinstance(t_stamp1, type(None)):
-            t_stamp1 = min([self.get_property_value('start_time', channel) for channel in self.channels if channel in channels_to_pick])
+            t_stamp1 = min([self.get_property('start_time', channel) for channel in self.channels if channel in channels_to_pick])
 
         if isinstance(t_stamp2, type(None)):
-            t_stamp2 = min([self.get_property_value('end_time', channel) for channel in self.channels if channel in channels_to_pick])
+            t_stamp2 = min([self.get_property('end_time', channel) for channel in self.channels if channel in channels_to_pick])
 
         return self.session.read_ts_channels_uutc(channels_to_pick, [t_stamp1, t_stamp2])
 

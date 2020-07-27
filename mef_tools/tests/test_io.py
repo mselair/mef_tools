@@ -175,11 +175,21 @@ class TestMefReader(TestCase):
         # check stored data and check nans
 
         reader = MefReader(self.session_path, self.pass2)
-        read_raw_data = reader.get_raw_data(channel, [start_time, end_time])
-        read_data = reader.get_data(channel, [start_time, end_time])
+        read_raw_data = reader.get_raw_data(channel, start_time, end_time)
+        read_data = reader.get_data(channel, start_time, end_time)
         self.assertTrue(check_data_integrity(test_data_1, read_data, 0))
 
+        read_data_no_time = reader.get_data(channel)
+        self.assertTrue(isinstance(reader.channels, list))
+        self.assertTrue(isinstance(reader.properties, list))
+        self.assertTrue(isinstance(reader.get_property('name'), list))
+        self.assertTrue(isinstance(reader.get_property('name', channel), str))
+        self.assertTrue(isinstance(reader.get_property('fsamp'), list))
+        self.assertTrue(isinstance(reader.get_property('fsamp', channel), float))
 
+        self.assertTrue(isinstance(reader.get_property('start_time', channel), np.int64))
+
+        self.assertTrue(check_data_integrity(test_data_1, read_data_no_time, 0))
 
 
 

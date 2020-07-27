@@ -117,13 +117,13 @@ Example
     channel = 'channel_2'
     writer2.write_data(data, channel, newseg_time, fs, new_segment=True, )
 
+
     Reader = MefReader(path_file_to, password=pass2)
     signals = []
     
-    for idx in range(Reader.bi.__len__()):
-        key = Reader.bi[idx]['name']
-        x = np.round(Reader.get_data(key, Reader.bi[idx]['start_time'][0], Reader.bi[idx]['end_time'][0])[0]).astype(np.int32)
-        x = x * Reader.bi[idx]['ufact'][0]
+    for channel in Reader.channels:
+        x = Reader.get_data(key)
+        x = Reader.get_data(key, Reader.get_property('start_time', key), Reader.get_property('end_time', key))
         print('Overall Difference in signal ', key, ' ', (df[key][:-1] - x).sum())
         signals.append(x)
     

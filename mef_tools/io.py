@@ -519,9 +519,9 @@ def check_int32_dynamic_range(x_min, x_max, alpha):
 
 def infer_conversion_factor(data):
     mean_digg_abs = np.nanmean(np.abs(np.diff(data)))
-    precision = 1
+    precision = 0
     # this works for small z-scored data, for high dynamic range input needs to be decreased again (saturation)
-    while mean_digg_abs < 100:
+    while (mean_digg_abs < 1000) & (mean_digg_abs != 0):
         precision += 1
         mean_digg_abs *= 10
 
@@ -542,8 +542,8 @@ def convert_data_to_int32(data, precision=None):
         print(f"Info: precision set to {precision}")
 
     if (precision < 0) | (not (isinstance(precision, int))):
-        print(f"WARNING: precision set to incorrect value, it is set to default (3)")
-        precision = 3
+        print(f"WARNING: precision set to incorrect value, it is set to default (0) = conversion without scaling (scaling=1)")
+        precision = 0
 
     deciround = np.round(data, decimals=precision)
     data_int32 = np.empty(shape=deciround.shape, dtype=np.int32)

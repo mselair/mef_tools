@@ -113,6 +113,19 @@ class MefReader:
         return data
 
 
+    def get_annotations(self, channel=None):
+        annot_list = None
+        try:
+            if channel is None:
+                annot_list = self.session.read_records()
+            else:
+                annot_list = self.session.read_records(channel=channel)
+        except TypeError as exc:
+            print('WARNING: read of annotations record failed, no annotations returned')
+        return annot_list
+
+
+
 class MefWriter:
     """
         MefWriter class is a high level util class for easy mef3 data writing.
@@ -605,5 +618,9 @@ def check_data_integrity(original_data, converted_data, precision):
     idx_numbers = ~np.isnan(original_data)
     result_bin = np.allclose(coverted_float[idx_numbers], original_data[idx_numbers], atol=0.1**(precision-1))
     return result_bin
+
+
+
+
 
 

@@ -3,6 +3,8 @@ from unittest import TestCase
 from mef_tools.io import MefWriter, MefReader, create_pink_noise, check_data_integrity
 import os
 import numpy as np
+import pandas as pd
+
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
@@ -105,7 +107,7 @@ class TestMefWriter(TestCase):
         write_data_nans = np.isnan(write_data_all)
         read_data_all = writer.session.read_ts_channels_sample(channel, [None, None]) * writer.channel_info[channel]['ufact'][0]
         read_data_nans = np.isnan(read_data_all)
-        self.assertTrue(np.allclose(write_data_all[~write_data_nans], read_data_all[~read_data_nans], atol=0.1**(precision-1)))
+        self.assertTrue(np.allclose(write_data_all[~write_data_nans], read_data_all[~read_data_nans], atol=0.1 ** (precision - 1)))
         # write new channel data
         secs_to_write = 30
 
@@ -136,6 +138,75 @@ class TestMefWriter(TestCase):
         self.assertTrue(np.array_equal(read_data_nans, write_data_nans))
         self.assertTrue(np.allclose(test_data_5[~write_data_nans], read_data[~read_data_nans], atol=0.1 ** (precision - 1)))
 
+        self.test_write_annotations()
+
+    def test_write_annotations(self):
+
+        # define start of data uutc in uUTC time
+        start_time = 1578715810000000 - 1000000
+        # define end of data in uUTC time
+        end_time = int(start_time + 1e6 * 300)
+        # offset time - if not data written
+        offset = int(start_time - 1e6)
+        # create note annotation ( no duration)
+        starts = np.arange(start_time, end_time, 2e6)
+        text = ['test'] * len(starts)
+        types = ['Note'] * len(starts)
+        note_annotations = pd.DataFrame(data={'time': starts, 'text': text, 'type': types})
+        cols = ['time', 'text', 'type']
+        self.mef_writer.write_annotations(note_annotations,)
+        annot_list = self.mef_writer._read_annotation_record()
+        read_annotations = pd.DataFrame(annot_list)
+        read_annotations = read_annotations[cols]
+
+        if len(self.mef_writer.channel_info) == 0:
+            read_annotations['time'] += offset
+
+        pd._testing.assert_frame_equal(read_annotations, note_annotations)
+
+        # write channel annot with duration
+        secs_to_write = 30
+        start_time = end_time
+        end_time = int(start_time + 1e6 * secs_to_write)
+
+        # create test data
+        fs = 500
+        low_b = -10
+        up_b = 10
+        precision = 3
+        test_data_1 = create_pink_noise(fs, secs_to_write, low_b, up_b)
+        channel = 'test_channel_annot'
+        self.mef_writer.write_data(test_data_1, channel, start_time, fs, precision=precision)
+
+        # create annotation with duration
+        starts = np.arange(start_time, end_time, 1e5)
+        text = ['test'] * len(starts)
+        types = ['EDFA'] * len(starts)
+        duration = [10025462] * len(starts)
+        note_annotations = pd.DataFrame(data={'time': starts, 'text': text, 'type': types, 'duration':duration})
+        cols.append('duration')
+
+        self.mef_writer.write_annotations(note_annotations, channel=channel)
+        annot_list = self.mef_writer._read_annotation_record(channel=channel)
+        read_annotations = pd.DataFrame(annot_list)
+        read_annotations = read_annotations[cols]
+
+        pd._testing.assert_frame_equal(read_annotations, note_annotations)
+
+        # append new annotations to session
+        starts2 = starts + 6000000
+        text2 = ['test2'] * len(starts2)
+        duration = [10025462] * len(starts)
+        new_annotations = pd.DataFrame(data={'time': starts2, 'text': text2, 'type': types,'duration':duration})
+        self.mef_writer.write_annotations(new_annotations, channel=channel)
+
+        annot_list = self.mef_writer._read_annotation_record(channel=channel)
+        read_annotations = pd.DataFrame(annot_list)
+        read_annotations = read_annotations[cols]
+        total_annots = new_annotations.append(note_annotations, ignore_index=True)
+
+        pd._testing.assert_frame_equal(read_annotations, total_annots)
+
 
 class TestMefReader(TestCase):
     def setUp(self):
@@ -149,8 +220,7 @@ class TestMefReader(TestCase):
         del self.mef_writer
         rmtree(self.session_path)
 
-
-    def test_write_data(self):
+    def test_read_data(self):
         # multiple write test called
         # define how much is written
         secs_to_write = 30

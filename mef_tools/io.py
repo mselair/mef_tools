@@ -16,6 +16,7 @@ from copy import deepcopy, copy
 
 class MefReader:
     __version__ = '2.0.0'
+
     def __init__(self, session_path, password2=None):
         self.session = mef_session.MefSession(session_path, password2, True)
         self.bi = self.session.read_ts_channel_basic_info()
@@ -24,6 +25,7 @@ class MefReader:
             if ch_info['fsamp'].__len__() > 1:
                 raise NotImplementedError('[ERROR]: File contains more sampling frequencies '
                                           'for a single channels. This feature is not implemented.')
+
     def __del__(self):
         self.close()
 
@@ -110,6 +112,7 @@ class MefReader:
             data = data[0].astype(np.float) * self.get_channel_info(channels)['ufact'][0]
         return data
 
+
 class MefWriter:
     """
         MefWriter class is a high level util class for easy mef3 data writing.
@@ -117,7 +120,6 @@ class MefWriter:
     __version__ = '2.0.0'
 
     def __init__(self, session_path, overwrite=False, password1=None, password2=None):
-        # TODO handling annotations (records)
         self.pwd1 = password1
         self.pwd2 = password2
         self.bi = None
@@ -265,7 +267,7 @@ class MefWriter:
                 precision = infer_conversion_factor(data_write)
                 print(f'INFO: precision set to {precision}')
 
-            ufact = 0.1**precision
+            ufact = np.round(0.1**precision, precision)
             # convert data to int32
             self.channel_info[channel] = {'mef_block_len': self.get_mefblock_len(sampling_freq), 'ufact': [ufact]}
             data_converted = convert_data_to_int32(data_write, precision=precision)
@@ -304,6 +306,76 @@ class MefWriter:
         self._reload_session_info()
         print('INFO: data write method finished.')
         return True
+
+    def write_annotations(self, annotations, channel=None):
+        """
+            Method writes annotations to a session/channel. Method handles new annotations or appending to existing annotations. Input
+            data has to have required structure.
+
+            Parameters
+            ----------
+            annotations : pandas.DataFrame
+                DataFrame has to have a proper structure with columns - time column [uutctimestamp], type ['str specified in pymef' -
+                Note or EDFA],
+                text ['str'],
+                optional duration [usec]
+            channel : str, optional
+                annotations are written at the channel level
+        """
+
+        # check int of time column
+        if not np.issubdtype(annotations['time'].dtype, np.int64):
+            annotations['time'] = annotations['time'].astype(np.int)
+
+        # check duration for int
+        if 'duration' in annotations.columns:
+            if not np.issubdtype(annotations['duration'].dtype, np.int64):
+                annotations['duration'] = annotations['duration'].astype(np.int)
+
+        start_time = annotations['time'].min()
+        end_time = annotations['time'].max()
+        record_list = annotations.to_dict('records')
+
+        # read old annotations
+        print(' Reading previously stored annotations...')
+        previous_list = self._read_annotation_record(channel=channel)
+        if previous_list is not None:
+            read_annotations = pd.DataFrame(previous_list)
+            read_start = read_annotations['time'].min()
+            read_end = read_annotations['time'].max()
+            if read_start < start_time:
+                start_time = read_start
+            if read_end > end_time:
+                end_time = read_end
+
+            record_list.extend(previous_list)
+
+        self._write_annotation_record(start_time, end_time, record_list, channel=channel)
+        print(f'Annotations written, total {len(record_list)}, channel: {channel}')
+        return
+
+    def _write_annotation_record(self, start_time, end_time, record_list, channel=None):
+        record_offset = int(start_time-1e6)
+        if channel is None:
+            self.session.write_mef_records(self.pwd1, self.pwd2,  start_time,
+                                 end_time, record_offset, record_list)
+        else:
+            self.session.write_mef_records(self.pwd1, self.pwd2, start_time,
+                                           end_time, record_offset, record_list, channel=channel)
+        self.session.reload()
+
+    def _read_annotation_record(self, channel=None):
+        try:
+            annot_list = None
+            if channel is None:
+                annot_list = self.session.read_records()
+            else:
+                annot_list = self.session.read_records(channel=channel)
+        except TypeError as exc:
+            print('WARNING: read of annotations record failed, no annotations returned')
+        except KeyError as exc:
+            print('WARNING: read of annotations record failed, no annotations returned')
+        return annot_list
 
     def _create_segment(self, data=None, channel=None, start_uutc=None, end_uutc=None, sampling_frequency=None, segment=0, ):
 
@@ -418,6 +490,7 @@ def voss(nrows, ncols=32):
 
     return total.values
 
+
 def create_pink_noise(fs, seg_len, low_bound, up_bound):
     n = fs * seg_len
     if n > 20 * 1e6:
@@ -427,12 +500,14 @@ def create_pink_noise(fs, seg_len, low_bound, up_bound):
     norm_data = scale_signal(data, low_bound, up_bound)
     return norm_data
 
+
 def scale_signal(data, a, b):
     min_x = np.min(data)
     data_range = np.max(data) - min_x
     temp_arr = (data - min_x) / data_range
     new_range = b - a
     return temp_arr * new_range + a
+
 
 def check_int32_dynamic_range(x_min, x_max, alpha):
     min_value = np.iinfo(np.int32).min
@@ -441,11 +516,12 @@ def check_int32_dynamic_range(x_min, x_max, alpha):
     else:
         return True
 
+
 def infer_conversion_factor(data):
     mean_digg_abs = np.nanmean(np.abs(np.diff(data)))
-    precision = 1
+    precision = 0
     # this works for small z-scored data, for high dynamic range input needs to be decreased again (saturation)
-    while mean_digg_abs < 100:
+    while (mean_digg_abs < 1000) & (mean_digg_abs != 0):
         precision += 1
         mean_digg_abs *= 10
 
@@ -458,6 +534,7 @@ def infer_conversion_factor(data):
         alpha = 10 ** precision
     return precision
 
+
 def convert_data_to_int32(data, precision=None):
     if precision is None:
         print(f"Info: convert data to int32:  precision is not given, inferring...")
@@ -465,13 +542,14 @@ def convert_data_to_int32(data, precision=None):
         print(f"Info: precision set to {precision}")
 
     if (precision < 0) | (not (isinstance(precision, int))):
-        print(f"WARNING: precision set to incorrect value, it is set to default (3)")
-        precision = 3
+        print(f"WARNING: precision set to incorrect value, it is set to default (0) = conversion without scaling (scaling=1)")
+        precision = 0
 
     deciround = np.round(data, decimals=precision)
     data_int32 = np.empty(shape=deciround.shape, dtype=np.int32)
     data_int32[:] = 10 ** precision * (deciround)
     return data_int32
+
 
 def find_intervals_binary_vector(input_bin_vector, fs, start_uutc, samples_of_nans_allowed=None):
     if samples_of_nans_allowed is None:
@@ -519,6 +597,7 @@ def find_intervals_binary_vector(input_bin_vector, fs, start_uutc, samples_of_na
     connected_detected_intervals['start_uutc'] = (connected_detected_intervals['start_samples'] / fs * 1e6 + start_uutc).astype(int)
     connected_detected_intervals['stop_uutc'] = (connected_detected_intervals['stop_samples'] / fs * 1e6 + start_uutc).astype(int)
     return connected_detected_intervals
+
 
 def check_data_integrity(original_data, converted_data, precision):
 

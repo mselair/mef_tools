@@ -117,6 +117,31 @@ Example
     channel = 'channel_2'
     writer2.write_data(data, channel, newseg_time, fs, new_segment=True, )
 
+    # ----------- write annotations ---------
+    # define start of data uutc in uUTC time
+    start_time = 1578715810000000 - 1000000
+    # define end of data in uUTC time
+    end_time = int(start_time + 1e6 * 300)
+    # offset time - if not data written
+    offset = int(start_time - 1e6)
+    # create note annotation ( no duration)
+    starts = np.arange(start_time, end_time, 2e6)
+    text = ['test'] * len(starts)
+    types = ['Note'] * len(starts)
+    note_annotations = pd.DataFrame(data={'time': starts, 'text': text, 'type': types})
+    # write annotations to session level
+    writer2.write_annotations(note_annotations,)
+
+    # create annotation with duration and store them to a channel
+    starts = np.arange(start_time, end_time, 1e5)
+    text = ['test'] * len(starts)
+    types = ['EDFA'] * len(starts)
+    duration = [10025462] * len(starts)
+    note_annotations = pd.DataFrame(data={'time': starts, 'text': text, 'type': types, 'duration':duration})
+    # write annotations to the channel level
+    writer2.write_annotations(note_annotations, channel=channel )
+
+    # -------- reader example -----------
 
     Reader = MefReader(path_file_to, password=pass2)
     signals = []

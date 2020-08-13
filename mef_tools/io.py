@@ -139,6 +139,7 @@ class MefWriter:
         self.channel_info = {}
 
         # ------- properties ------
+        self._record_offset = 0
         self.verbose = verbose
         # maximal nans in continuous block to be stored in data and not indexed
         self._max_nans_written = 'fs'
@@ -370,7 +371,7 @@ class MefWriter:
         return
 
     def _write_annotation_record(self, start_time, end_time, record_list, channel=None):
-        record_offset = int(start_time-1e6)
+        record_offset = self.record_offset
         if channel is None:
             self.session.write_mef_records(self.pwd1, self.pwd2,  start_time,
                                  end_time, record_offset, record_list)
@@ -404,10 +405,10 @@ class MefWriter:
 
         # DEFAULT VALS FOR Segment 0
         if segment == 0:
-            self.section3_dict['recording_time_offset'] = int(start_uutc)
+            self.section3_dict['recording_time_offset'] = self.record_offset # int(start_uutc)
             self.section2_ts_dict['start_sample'] = 0
         else:
-            self.section3_dict['recording_time_offset'] = int(self.channel_info[channel]['start_time'][0])
+            self.section3_dict['recording_time_offset'] = self.record_offset # int(self.channel_info[channel]['start_time'][0])
             self.section2_ts_dict['start_sample'] = int(self.channel_info[channel]['nsamp'][0])
 
         self.section2_ts_dict['recording_duration'] = int((end_uutc - start_uutc) / 1e6)
@@ -476,6 +477,14 @@ class MefWriter:
             return
         self._data_units = str.encode(units_str, 'utf-8')
         self.section2_ts_dict['units_description'] = copy(self._data_units)
+
+    @property
+    def record_offset(self):
+        return self._record_offset
+
+    @record_offset.setter
+    def record_offset(self, new_offset):
+        self._record_offset = new_offset
 
 
 # Functions

@@ -112,7 +112,7 @@ class TestMefWriter(TestCase):
         secs_to_write = 30
 
         # define start of data uutc in uUTC time
-        start_time = 1578716810000000
+        start_time = 1578715810000000 - 10 * 1000000
         # define end of data in uUTC time
         end_time = int(start_time + 1e6 * secs_to_write)
 
@@ -137,7 +137,6 @@ class TestMefWriter(TestCase):
         write_data_nans = np.isnan(test_data_5)
         self.assertTrue(np.array_equal(read_data_nans, write_data_nans))
         self.assertTrue(np.allclose(test_data_5[~write_data_nans], read_data[~read_data_nans], atol=0.1 ** (precision - 1)))
-
         self.test_write_annotations()
 
     def test_write_annotations(self):
@@ -147,7 +146,7 @@ class TestMefWriter(TestCase):
         # define end of data in uUTC time
         end_time = int(start_time + 1e6 * 300)
         # offset time - if not data written
-        offset = int(start_time - 1e6)
+        offset = 0#int(start_time - 1e6)
         # create note annotation ( no duration)
         starts = np.arange(start_time, end_time, 2e6)
         text = ['test'] * len(starts)

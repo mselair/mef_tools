@@ -7,15 +7,15 @@
 
 from annotation_tools.xml_structured_parsing.myXML import myXML, DELIMITER, ET
 
-def parser_xml_CyberPSG(path):
-    class EmptyClass:
-        def __init__(self, version=1.1, file_id='SPARSE_MIX', file_path=''):
-            self._version = version
-            self._file_id = file_id
-            self._file_path = file_path
-
-    PseudoParent = EmptyClass(version=1.1, file_id=path.split(DELIMITER)[-1].split('.')[0], file_path=path)
-    return myXML_AnnotationData.init_from_existing(PseudoParent, ET.parse(path).getroot())
+#def parser_xml_CyberPSG(path):
+#    class EmptyClass:
+#        def __init__(self, version=1.1, file_id='SPARSE_MIX', file_path=''):
+#            self._version = version
+#            self._file_id = file_id
+#            self._file_path = file_path
+#
+#    PseudoParent = EmptyClass(version=1.1, file_id=path.split(DELIMITER)[-1].split('.')[0], file_path=path)
+#    return myXML_AnnotationData.init_from_existing(PseudoParent, ET.parse(path).getroot())
 
 ##### VERSION #####
 class myXML_Note(myXML):
@@ -41,7 +41,6 @@ class myXML_AnnotationGroup(myXML):
 class myXML_AnnotationGroups(myXML):
     tag = 'AnnotationGroups'
     ref_children = [myXML_AnnotationGroup]
-
 
 class myXML_Description(myXML):
     tag = 'description'
@@ -70,8 +69,6 @@ class myXML_AnnotationTypes(myXML):
     tag = 'AnnotationTypes'
     ref_children = [myXML_AnnotationType]
 
-
-
 class myXML_StartTimeUtc(myXML):
     tag = 'startTimeUtc'
 
@@ -87,17 +84,13 @@ class myXML_ChannelName(myXML):
 class myXML_VerticalPositionPercentage(myXML):
     tag = 'verticalPositionPercentage'
 
-
 class myXML_Annotation(myXML):
     tag = 'Annotation'
     ref_children = [myXML_Id, myXML_Created, myXML_Modified, myXML_StartTimeUtc, myXML_endTimeUtc, myXML_AnnotationTypeId, myXML_ChannelName, myXML_VerticalPositionPercentage, myXML_Note]
 
-
 class myXML_Annotations(myXML):
     tag = 'Annotations'
     ref_children = [myXML_Annotation]
-
-
 
 ##### 1st Level ######
 class myXML_AnnotationData(myXML):

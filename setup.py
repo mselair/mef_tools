@@ -58,7 +58,6 @@ setuptools.setup(
         'pyzmq',
         'tqdm',
         'sshtunnel',
-        'mselair-aisc',
         'pyedflib',
 
     ]

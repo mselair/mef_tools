@@ -4,7 +4,7 @@
 .. image:: https://readthedocs.org/projects/mef-tools/badge/?version=latest
     :target: https://mef-tools.readthedocs.io/en/latest/?badge=latest
 
-.. image:: https://img.shields.io/badge/pypi-0.0.2-orange
+.. image:: https://img.shields.io/badge/pypi-1.0.3-orange
     :target: https://pypi.org/project/mselair-aisc/
 
 .. image:: https://img.shields.io/pypi/pyversions/mselair-aisc.svg?longCache=True

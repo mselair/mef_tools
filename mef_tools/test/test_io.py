@@ -212,7 +212,8 @@ class TestMefWriter(TestCase):
 class TestMefReader(TestCase):
     def setUp(self):
         session_name = 'test_session'
-        self.session_path = f'{basedir}/{session_name}.mefd'
+        #self.session_path = f'{basedir}/{session_name}.mefd'
+        self.session_path = os.path.join(basedir, session_name + '.mefd')
         self.pass1 = 'pass1'
         self.pass2 = 'pass2'
         self.mef_writer = MefWriter(session_path=self.session_path, overwrite=True, password1=self.pass1, password2=self.pass2)

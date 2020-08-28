@@ -32,15 +32,6 @@ jobs:
         - pip3 install -U pip
       language: shell
 
-    - name: "macOS - Python 3.8"
-      os: osx
-      osx_image: xcode11.3
-      before_install:
-        - python3 --version
-        - pip3 install -U pip
-      language: shell
-      python: 3.8
-
     - name: "Windows - Python 3.8"
       os: windows
       before_install:

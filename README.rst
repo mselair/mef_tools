@@ -8,7 +8,12 @@
     :target: https://pypi.org/project/mselair-aisc/
 
 .. image:: https://img.shields.io/pypi/pyversions/mselair-aisc.svg?longCache=True
-    :target: https://pypi.org/project/mselair-aisc/
+    :target: https://img.shields.io/pypi/pyversions/Django
+
+.. image:: https://img.shields.io/pypi/pyversions/mselair-aisc.svg?longCache=True
+    :target: https://img.shields.io/badge/platform-windows%20%7C%20macos%20%7C%20linux-lightgrey
+
+
 
 
 MEF_Tools

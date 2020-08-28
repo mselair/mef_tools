@@ -63,9 +63,6 @@ jobs:
       env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
 
 
-
-
-
 install:
   - pip3 install . || pip install .
 script:

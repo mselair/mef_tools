@@ -19,26 +19,24 @@ jobs:
     - name: "macOS - Python 3.6"
       os: osx
       osx_image: xcode9.4
-      before_install:
-        - python3 --version
-        - pip3 install -U pip
       language: shell
+      before_install:
+        - pip3 install -U pip
 
     - name: "macOS - Python 3.7"
       os: osx
       osx_image: xcode11.3
-      before_install:
-        - python3 --version
-        - pip3 install -U pip
       language: shell
+      before_install:
+        - pip3 install -U pip
 
     - name: "Windows - Python 3.8"
       os: windows
+      language: shell
       before_install:
         - choco install python --version 3.8
-        - python -m pip install --upgrade pip
         - python3 --version
-      language: shell
+        - python -m pip install --upgrade pip
 
 
 install:

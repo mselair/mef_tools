@@ -163,7 +163,7 @@ class TestMefWriter(TestCase):
         if len(self.mef_writer.channel_info) == 0:
             read_annotations['time'] += offset
 
-        pd._testing.assert_frame_equal(read_annotations, note_annotations)
+        pd.testing.assert_frame_equal(read_annotations, note_annotations)
 
         # write channel annot with duration
         secs_to_write = 30
@@ -192,7 +192,7 @@ class TestMefWriter(TestCase):
         read_annotations = pd.DataFrame(annot_list)
         read_annotations = read_annotations[cols]
 
-        pd._testing.assert_frame_equal(read_annotations, note_annotations)
+        pd.testing.assert_frame_equal(read_annotations, note_annotations)
 
         # append new annotations to session
         starts2 = starts + 6000000
@@ -206,7 +206,7 @@ class TestMefWriter(TestCase):
         read_annotations = read_annotations[cols]
         total_annots = new_annotations.append(note_annotations, ignore_index=True)
 
-        pd._testing.assert_frame_equal(read_annotations, total_annots)
+        pd.testing.assert_frame_equal(read_annotations, total_annots)
 
 
 class TestMefReader(TestCase):

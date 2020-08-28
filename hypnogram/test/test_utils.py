@@ -1,6 +1,5 @@
 import unittest
 from unittest import TestCase
-import os
 from datetime import datetime, timedelta
 from pandas._libs.tslibs.timestamps import Timestamp
 from dateutil import tz
@@ -111,7 +110,7 @@ class TestMefWriter(TestCase):
         df = create_duration(df)
         self.assertEqual(df['duration'][0], 30)
 
-    def test_create_day_indexes(self):
+    def test_create_merge_annotations(self):
         now = datetime.now().timestamp()-1000
         df = pd.DataFrame(
             [
@@ -120,9 +119,9 @@ class TestMefWriter(TestCase):
             ]
         )
         df = merge_annotations(df)
-        print(df)
+        self.assertEqual(df.__len__(), 1)
 
-    def test_create_day_indexes(self):
+    def test_create_tile_annotations(self):
         now = datetime.now().timestamp()-1000
         df = pd.DataFrame(
             [
@@ -133,6 +132,30 @@ class TestMefWriter(TestCase):
         #df = merge_annotations(df)
         df = tile_annotations(df, 10)
         self.assertEqual(df.__len__(), 6)
+
+
+    def test_create_day_indexes(self):
+        t = datetime(year=2010, month=1, day=1, hour=12, minute=30, second=00, tzinfo=tz.tzutc())
+        df = pd.DataFrame(
+            [
+                {'start':t+timedelta(minutes=k), 'end':t+timedelta(minutes=k+10)} for k in range(0, 120, 10)
+            ]
+        )
+        df = create_day_indexes(df, 14)
+        self.assertEqual(df['day'].sum(), 3)
+
+
+
+
+        t = datetime(year=2010, month=1, day=1, hour=23, minute=30, second=00, tzinfo=tz.tzutc())
+        df = pd.DataFrame(
+            [
+                {'start':t+timedelta(minutes=k), 'end':t+timedelta(minutes=k+10)} for k in range(0, 120, 10)
+            ]
+        )
+        df = create_day_indexes(df, 0)
+        self.assertEqual(df['day'].sum(), 9)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -32,11 +32,31 @@ jobs:
         - python3 --version
         - pip3 install -U pip
 
+    - name: "Windows - Python 3.6"
+      os: windows
+      language: shell
+      before_install:
+        - choco install python --version 3.6
+        - python --version
+        - python -m pip install --upgrade pip
+        - pip3 install wheel || pip install wheel
+      env: PATH=/c/Python36:/c/Python36/Scripts:$PATH
+
+    - name: "Windows - Python 3.7"
+      os: windows
+      language: shell
+      before_install:
+        - choco install python --version 3.7
+        - python --version
+        - python -m pip install --upgrade pip
+        - pip3 install wheel || pip install wheel
+      env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
+
     - name: "Windows - Python 3.8"
       os: windows
       language: shell
       before_install:
-        - choco install python --version 3.8.0
+        - choco install python --version 3.8
         - python --version
         - python -m pip install --upgrade pip
         - pip3 install wheel || pip install wheel
@@ -50,7 +70,7 @@ install:
   - pip3 install . || pip install .
 script:
   - python3 setup.py bdist_wheel sdist || python setup.py bdist_wheel sdist
-  - python3 -m unittest || python setup.py bdist_wheel sdist
+  - python3 -m unittest || python -m unittest
 
 
 deploy:

@@ -52,7 +52,9 @@ class TestMefWriter(TestCase):
         write_data_nans = np.isnan(test_data_1)
         print('XXXXXXXXXXX')
         print(read_data_nans.dtype, write_data_nans.dtype)
+        print(read_data_nans.shape, write_data_nans.shape)
         print(test_data_1.dtype, read_data.dtype)
+        print(test_data_1.shape, read_data.shape)
         self.assertTrue(np.array_equal(read_data_nans, write_data_nans))
         self.assertTrue(check_data_integrity(test_data_1, read_data, precision))
         # append new data
@@ -164,8 +166,9 @@ class TestMefWriter(TestCase):
 
         if len(self.mef_writer.channel_info) == 0:
             read_annotations['time'] += offset
+        print('OOOOOOOOOOOOOOOOOO')
         print(read_annotations.iloc[0])
-        print(read_annotations.iloc[0]['time'])
+        print(read_annotations.iloc[0]['time'].dtype, note_annotations.iloc[0]['time'].dtype)
         pd.testing.assert_frame_equal(read_annotations, note_annotations)
 
         # write channel annot with duration

@@ -7,11 +7,11 @@
 .. image:: https://img.shields.io/badge/pypi-1.0.6-orange
     :target: https://pypi.org/project/mselair-aisc/
 
-.. image:: https://img.shields.io/pypi/pyversions/mselair-aisc.svg?longCache=True
-    :target: https://img.shields.io/pypi/pyversions/Django
+.. image:: https://img.shields.io/pypi/pyversions/Django
+    :target: https://pypi.org/project/mselair-aisc/
 
-.. image:: https://img.shields.io/pypi/pyversions/mselair-aisc.svg?longCache=True
-    :target: https://img.shields.io/badge/platform-windows%20%7C%20macos%20%7C%20linux-lightgrey
+.. image:: https://img.shields.io/badge/platform-windows%20%7C%20macos%20%7C%20linux-lightgrey
+    :target: https://pypi.org/project/mselair-aisc/
 
 
 

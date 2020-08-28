@@ -45,7 +45,7 @@ jobs:
       os: windows
       before_install:
         - choco install python --version 3.8
-        - python -m pip3 install --upgrade pip3
+        - python -m pip install --upgrade pip
         - python3 --version
       language: shell
 

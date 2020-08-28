@@ -1,4 +1,4 @@
-
+import unittest
 from unittest import TestCase
 import os
 from datetime import datetime, timedelta
@@ -40,7 +40,7 @@ class TestMefWriter(TestCase):
 
     def test__convert_to_local(self):
         nowutc = datetime.now(tz.tzutc())
-        nowlocal = nowutc.astimezone(tz.local())
+        nowlocal = nowutc.astimezone(tz.tzlocal())
         self.assertEqual(_convert_to_local(nowutc), nowlocal)
 
     def test__convert_to_timezone(self):
@@ -134,3 +134,5 @@ class TestMefWriter(TestCase):
         df = tile_annotations(df, 10)
         self.assertEqual(df.__len__(), 6)
 
+if __name__ == '__main__':
+    unittest.main()

@@ -1,4 +1,5 @@
 from shutil import rmtree
+import unittest
 from unittest import TestCase
 from mef_tools.io import MefWriter, MefReader, create_pink_noise, check_data_integrity
 import os
@@ -263,7 +264,8 @@ class TestMefReader(TestCase):
 
 
 
-
+if __name__ == '__main__':
+    unittest.main()
 
 
 

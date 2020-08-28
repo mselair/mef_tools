@@ -52,6 +52,7 @@ class TestMefWriter(TestCase):
         write_data_nans = np.isnan(test_data_1)
 
         self.assertTrue(np.array_equal(read_data_nans, write_data_nans))
+        print(test_data_1.dtype, read_data.dtype)
         self.assertTrue(check_data_integrity(test_data_1, read_data, precision))
         # append new data
         secs_to_append = 5

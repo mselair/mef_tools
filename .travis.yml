@@ -33,16 +33,14 @@ jobs:
     - name: "Windows - Python 3.8"
       os: windows
       language: shell
-      env:
-        - CONDA_PYTHON=3.6
-        - CONDA_PYTHON=3.7
-        - CONDA_PYTHON=3.8
-
+      before_install:
+        - choco install python --version 3.8.0
+        - python -m pip install --upgrade pip
 install:
-  - pip3 install .
+  - pip3 install . || pip install .
 script:
-  - python3 setup.py bdist_wheel sdist
-  - python3 -m unittest
+  - python3 setup.py bdist_wheel sdist || python setup.py bdist_wheel sdist
+  - python3 -m unittest || python setup.py bdist_wheel sdist
 
 
 deploy:

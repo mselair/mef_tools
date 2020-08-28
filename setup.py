@@ -46,6 +46,8 @@ setuptools.setup(
         'Intended Audience :: Science/Research',
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Operating System :: OS Independent",
         'Topic :: Scientific/Engineering :: Medical Science Apps.'
     ],

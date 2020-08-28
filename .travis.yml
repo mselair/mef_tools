@@ -1,13 +1,26 @@
-language: python
-python:
-  - "3.6"
-  - "3.7"
-  - "3.8"
+jobs:
+  include:
+    - name: "Python Linux 3.6-3.8"
+      os: linux
+      language: python
+      python:
+        - "3.6"
+        - "3.7"
+        - "3.8"
+
+    - name: "macOS"
+      os: osx
+      osx_image: xcode11.2
+      language: shell
+
+
 install:
   - pip install .
 script:
   - python setup.py bdist_wheel sdist
   - python -m unittest
+
+
 deploy:
   provider: pypi
   #server: https://test.pypi.org/legacy/

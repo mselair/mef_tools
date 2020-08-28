@@ -60,7 +60,7 @@ setuptools.setup(
         'sshtunnel',
         'pyedflib',
         'pymef',
-        'dateutil'
+        'python-dateutil'
     ]
 )
 

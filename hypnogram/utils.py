@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from pandas._libs.tslibs.timestamps import Timestamp
 from dateutil import tz
 import pandas as pd
@@ -96,6 +96,7 @@ def create_duration(dfHyp):
     dfHyp['duration'] = dfHyp.apply(lambda x: duration(x), axis=1)
     return dfHyp
 
+
 def create_day_indexes(dfHyp, hour=12):
     if not isinstance(dfHyp, pd.DataFrame):
         raise AssertionError('[INPUT ERROR]: Variable dfHyp must be of a type pandas.DataFrame.')
@@ -132,14 +133,66 @@ def create_day_indexes(dfHyp, hour=12):
     dfHyp['day'] = day_idxes
     return dfHyp
 
-def tile_annotations():
-    #:TODO
-    pass
+def merge_annotations(df):
+    new_df = pd.DataFrame()
+    for idx, row in enumerate(df.iterrows()):
+        appbl = True
+        if idx > 0:
+            if new_df.iloc[-1].annotation == row[1].annotation and new_df.iloc[-1].end == row[1].start:
+                appbl = False
 
-def merge_annotations():
-    #:TODO
-    pass
+        if appbl == True:
+            new_df = new_df.append(row[1], ignore_index=True)
+        else:
+            new_df.loc[new_df.__len__() - 1, 'end'] = row[1].end
+        new_df.loc[new_df.__len__() - 1, 'duration'] = (new_df.loc[new_df.__len__() - 1, 'end'] - new_df.loc[new_df.__len__() - 1, 'start']).seconds
+    return new_df
 
+def tile_annotations(dfAnnotations, dur_threshold):
+    """
+
+    """
+    if not isinstance(dfAnnotations, pd.DataFrame):
+        raise AssertionError('[INPUT ERROR]: Variable dfAnnotations must be of type pandas.DataFrame.')
+
+    if not isinstance(dur_threshold, (int, float)):
+        raise AssertionError(
+            '[INPUT ERROR]: dur_threshold must be float or int format giving the maximum duration of a single annotation. All anotations above this duration threshold will be tiled.')
+
+    if np.isnan(dur_threshold) or np.isinf(dur_threshold) or dur_threshold <= 0:
+        raise AssertionError('[INPUT ERROR]: dur_threshold must be a valid number bigger than 0, not nan and not inf')
+
+    dfAnnotations['tile'] = 0
+    if (dfAnnotations['duration'] > dur_threshold).sum() > 0:
+        annotation_idx = 0
+        while annotation_idx < dfAnnotations.__len__():
+            if dfAnnotations['duration'][annotation_idx] > dur_threshold:
+
+                tdf = pd.DataFrame().append([dfAnnotations.iloc[annotation_idx]] * \
+                                            int(np.ceil(dfAnnotations['duration'][annotation_idx] / dur_threshold)),
+                                            ignore_index=True)
+
+                tdelta = timedelta(0, dur_threshold)
+                for idx, row in enumerate(tdf.iterrows()):
+                    start_datetime = tdf.loc[idx, 'start'] + idx * tdelta
+                    end_datetime = start_datetime + tdelta
+                    if end_datetime > tdf.loc[idx, 'end']:
+                        end_datetime = tdf.loc[idx, 'end']
+
+                    tdf.loc[idx, 'start'] = start_datetime
+                    tdf.loc[idx, 'end'] = end_datetime
+                    tdf.loc[idx, 'duration'] = (end_datetime - start_datetime).seconds
+                    #tdf.loc[idx, 'tile'] = idx
+
+                dfAnnotations = pd.DataFrame().append(
+                    [
+                        dfAnnotations.iloc[:annotation_idx],
+                        tdf,
+                        dfAnnotations.iloc[annotation_idx + 1:]
+                    ], ignore_index=True
+                )
+            annotation_idx += 1
+    return dfAnnotations
 
 
 

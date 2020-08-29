@@ -393,7 +393,7 @@ class MefWriter:
             print('WARNING: read of annotations record failed, no annotations returned')
         return annot_list
 
-    def _create_segment(self, data=None, channel=None, start_uutc=None, end_uutc=None, sampling_frequency=None, segment=0, ):
+    def _create_segment(self, data=None, channel=None, start_uutc=None, end_uutc=None, sampling_frequency=None, segment=0,):
 
         if data.dtype != np.int32:
             raise AssertionError('[TYPE ERROR] - MEF file writer accepts only int32 signal datatype!')
@@ -439,6 +439,8 @@ class MefWriter:
         if self.verbose:
             print(f"INFO: appending new data for channel: {channel}, segment: {segment}, ufac:"
                   f" {self.channel_info[channel]['ufact'][0]}, start: {start_uutc}, stop {end_uutc} ")
+        print('AAAAAAAAAAA')
+        print(start_uutc, end_uutc)
         self.session.append_mef_ts_segment_data(channel,
                                                   int(segment),
                                                   self.pwd1,

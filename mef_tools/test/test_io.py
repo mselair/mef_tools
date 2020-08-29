@@ -29,9 +29,9 @@ class TestMefWriter(TestCase):
         secs_to_seg2 = 5
 
         # define start of data uutc in uUTC time
-        start_time = 1578715810000000
+        start_time = np.int64(1578715810000000)
         # define end of data in uUTC time
-        end_time = int(start_time + 1e6 * secs_to_write)
+        end_time = np.int64(start_time + 1e6 * secs_to_write)
 
         writer = self.mef_writer
         writer.max_nans_written = 100
@@ -154,7 +154,6 @@ class TestMefWriter(TestCase):
         self.test_write_annotations()
 
     def test_write_annotations(self):
-
         # define start of data uutc in uUTC time
         start_time = 1578715810000000 - 1000000
         # define end of data in uUTC time

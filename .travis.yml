@@ -65,10 +65,12 @@ jobs:
       name: "Windows - Python 3.8"
       os: windows
 
+
 install: 
   - "pip3 install . || pip install ."
       
-script: 
+script:
+  - "python3 -m pip install twine --user || python -m pip install twine --user"
   - "python3 setup.py bdist_wheel sdist || python setup.py bdist_wheel sdist"
   - "python3 -m unittest || python -m unittest"
   

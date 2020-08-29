@@ -170,5 +170,5 @@ See installation instructions `INSTALL.md <https://github.com/xmival00/MEF_Tools
 License
 ----------------
 
-This software is licensed under the Apache-2.0 License. See `LICENSE <https://github.com/xmival00/MEF_Tools/blob/master/LICENSE>`_ file in the root directory of this project.
+This software is licensed under the Apache-2.0 License. See `LICENSE <https://github.com/xmival00/MEF_Tools/blob/master/LICENSE>`_ file in the root directory of this project. 
 

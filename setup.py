@@ -61,7 +61,7 @@ setuptools.setup(
         'tqdm',
         'sshtunnel',
         'pyedflib',
-        'pymef',
+        'pymef==1.1.7',
         'python-dateutil'
     ]
 )

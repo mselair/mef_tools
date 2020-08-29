@@ -59,6 +59,8 @@ class TestMefWriter(TestCase):
         print(test_data_1.max(), read_data.max())
         print(np.nanmin(test_data_1), np.nanmin(read_data))
         print(np.nanmax(test_data_1), np.nanmax(read_data))
+        print(test_data_1[::100])
+        print(read_data[::100])
 
         self.assertTrue(np.array_equal(read_data_nans, write_data_nans))
         self.assertTrue(check_data_integrity(test_data_1, read_data, precision))

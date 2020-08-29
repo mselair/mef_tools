@@ -1,36 +1,36 @@
 jobs:
-  include:
-    - name: "Linux - Python 3.6"
-      os: linux
-      language: python
-      python:
-        - "3.6"
-    - name: "Linux - Python 3.7"
-      os: linux
-      language: python
-      python:
-        - "3.7"
-    - name: "Linux - Python 3.8"
-      os: linux
-      language: python
-      python:
-        - "3.8"
+  #include:
+  #  - name: "Linux - Python 3.6"
+  #    os: linux
+  #    language: python
+  #    python:
+  #      - "3.6"
+  #  - name: "Linux - Python 3.7"
+  #    os: linux
+  #    language: python
+  #    python:
+  #      - "3.7"
+  #  - name: "Linux - Python 3.8"
+  #    os: linux
+  #    language: python
+  #    python:
+  #      - "3.8"
 
-    - name: "macOS - Python 3.6"
-      os: osx
-      osx_image: xcode9.4
-      language: shell
-      before_install:
-        - python3 --version
-        - pip3 install -U pip
+  #  - name: "macOS - Python 3.6"
+  #    os: osx
+  #    osx_image: xcode9.4
+  #    language: shell
+  #    before_install:
+  #      - python3 --version
+  #      - pip3 install -U pip
 
-    - name: "macOS - Python 3.7"
-      os: osx
-      osx_image: xcode11.3
-      language: shell
-      before_install:
-        - python3 --version
-        - pip3 install -U pip
+  #  - name: "macOS - Python 3.7"
+  #    os: osx
+  #    osx_image: xcode11.3
+  #    language: shell
+  #    before_install:
+  #      - python3 --version
+  #      - pip3 install -U pip
 
     - name: "Windows - Python 3.6"
       os: windows
@@ -42,25 +42,25 @@ jobs:
         - pip3 install wheel || pip install wheel
       env: PATH=/c/Python36:/c/Python36/Scripts:$PATH
 
-    - name: "Windows - Python 3.7"
-      os: windows
-      language: shell
-      before_install:
-        - choco install python --version 3.7
-        - python --version
-        - python -m pip install --upgrade pip
-        - pip3 install wheel || pip install wheel
-      env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
+  #  - name: "Windows - Python 3.7"
+  #    os: windows
+  #    language: shell
+  #    before_install:
+  #      - choco install python --version 3.7
+  #      - python --version
+  #      - python -m pip install --upgrade pip
+  #      - pip3 install wheel || pip install wheel
+  #    env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
 
-    - name: "Windows - Python 3.8"
-      os: windows
-      language: shell
-      before_install:
-        - choco install python --version 3.8
-        - python --version
-        - python -m pip install --upgrade pip
-        - pip3 install wheel || pip install wheel
-      env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
+  #  - name: "Windows - Python 3.8"
+  #    os: windows
+  #    language: shell
+  #    before_install:
+  #      - choco install python --version 3.8
+  #      - python --version
+  #      - python -m pip install --upgrade pip
+  #      - pip3 install wheel || pip install wheel
+  #    env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
 
 
 install:

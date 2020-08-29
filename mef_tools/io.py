@@ -12,6 +12,7 @@ from pymef import mef_session
 from pymef.mef_session import MefSession
 import pandas as pd
 from copy import deepcopy, copy
+from numpy import int64
 
 
 class MefReader:
@@ -72,7 +73,7 @@ class MefReader:
     def get_raw_data(self, channels, t_stamp1=None, t_stamp2=None):
         channels_to_pick = []
 
-        if isinstance(channels, int):
+        if isinstance(channels, int64):
             if channels < self.channels.__len__():
                 channels_to_pick = [self.channels[channels]]
             else:
@@ -87,7 +88,7 @@ class MefReader:
 
         if isinstance(channels, (list, np.ndarray)):
             for channel in channels:
-                if isinstance(channel, int):
+                if isinstance(channel, int64):
                     if not self.channels[channel] in channels_to_pick:
                         channels_to_pick.append(self.channels[channel])
 
@@ -206,7 +207,7 @@ class MefWriter:
         self.channel_info = {info['name']: deepcopy(info) for info in self.bi}
         for ch in self.channel_info.keys():
             self.channel_info[ch]['n_segments'] = len(self.session.session_md['time_series_channels'][ch]['segments'])
-            self.channel_info[ch]['mef_block_len'] = int(self.get_mefblock_len(self.channel_info[ch]['fsamp'][0]))
+            self.channel_info[ch]['mef_block_len'] = int64(self.get_mefblock_len(self.channel_info[ch]['fsamp'][0]))
 
     def write_data(self, data_write, channel, start_uutc, sampling_freq, end_uutc=None, precision=None, new_segment=False,
                    discont_handler=True):
@@ -224,7 +225,7 @@ class MefWriter:
                 data to be written, data will be scaled a translated to int32 automatically if precision parameter is not given
             channel : str
                 name of the stored channel
-            start_uutc : int
+            start_uutc : int64
                 uutc timestamp of the first sample
             sampling_freq : int
                 only int sampling freq is supported
@@ -247,7 +248,7 @@ class MefWriter:
 
         # infer end_uutc from data
         if end_uutc is None:
-            end_uutc = int(start_uutc + (len(data_write)/sampling_freq * 1e6))
+            end_uutc = int64(start_uutc + (len(data_write)/sampling_freq * 1e6))
 
         # check times are correct
         if end_uutc < start_uutc:
@@ -265,7 +266,7 @@ class MefWriter:
                 print(' Sampling frequency of provided data does not match fs of already written data')
                 return None
             # read precision from metadata - scale factor / can be different in new segment but not implemented
-            precision = int(-1 * np.log10(self.channel_info[channel]['ufact'][0]))
+            precision = int64(-1 * np.log10(self.channel_info[channel]['ufact'][0]))
 
             # convert data to int32
             data_converted = convert_data_to_int32(data_write, precision=precision)
@@ -409,15 +410,15 @@ class MefWriter:
             self.section2_ts_dict['start_sample'] = 0
         else:
             self.section3_dict['recording_time_offset'] = self.record_offset # int(self.channel_info[channel]['start_time'][0])
-            self.section2_ts_dict['start_sample'] = int(self.channel_info[channel]['nsamp'][0])
+            self.section2_ts_dict['start_sample'] = int64(self.channel_info[channel]['nsamp'][0])
 
-        self.section2_ts_dict['recording_duration'] = int((end_uutc - start_uutc) / 1e6)
+        self.section2_ts_dict['recording_duration'] = int64((end_uutc - start_uutc) / 1e6)
         self.section2_ts_dict['units_conversion_factor'] = self.channel_info[channel]['ufact'][0]
 
         print(f"INFO: creating new segment data for channel: {channel}, segment: {segment}, fs: {sampling_frequency}, ufac:"
               f" {self.channel_info[channel]['ufact'][0]}, start: {start_uutc}, stop {end_uutc} ")
         self.session.write_mef_ts_segment_metadata(channel,
-                                                   int(segment),
+                                                   int32(segment),
                                                    self.pwd1,
                                                    self.pwd2,
                                                    start_uutc,
@@ -426,7 +427,7 @@ class MefWriter:
                                                    dict(self.section3_dict))
 
         self.session.write_mef_ts_segment_data(channel,
-                                               int(segment),
+                                               int64(segment),
                                                self.pwd1,
                                                self.pwd2,
                                                self.channel_info[channel]['mef_block_len'],
@@ -442,7 +443,7 @@ class MefWriter:
         print('AAAAAAAAAAA')
         print(start_uutc, end_uutc)
         self.session.append_mef_ts_segment_data(channel,
-                                                  int(segment),
+                                                  int64(segment),
                                                   self.pwd1,
                                                   self.pwd2,
                                                   start_uutc,

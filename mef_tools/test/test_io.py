@@ -51,6 +51,7 @@ class TestMefWriter(TestCase):
         read_data_nans = np.isnan(read_data)
         write_data_nans = np.isnan(test_data_1)
         print('XXXXXXXXXXX')
+        print(start_time, end_time)
         print(read_data_nans.dtype, write_data_nans.dtype)
         print(read_data_nans.shape, write_data_nans.shape)
         print(test_data_1.dtype, read_data.dtype)
@@ -161,7 +162,7 @@ class TestMefWriter(TestCase):
         # offset time - if not data written
         offset = 0#int(start_time - 1e6)
         # create note annotation ( no duration)
-        starts = np.arange(start_time, end_time, 2e6, dtype=np.int64)
+        starts = np.arange(start_time, end_time, 2e6)
         text = ['test'] * len(starts)
         types = ['Note'] * len(starts)
         note_annotations = pd.DataFrame(data={'time': starts, 'text': text, 'type': types})
@@ -173,10 +174,6 @@ class TestMefWriter(TestCase):
 
         if len(self.mef_writer.channel_info) == 0:
             read_annotations['time'] += offset
-        print('OOOOOOOOOOOOOOOOOO')
-        print(note_annotations.iloc[0])
-        print(read_annotations.iloc[0])
-        print(note_annotations.iloc[0]['time'].dtype, read_annotations.iloc[0]['time'].dtype)
         pd.testing.assert_frame_equal(read_annotations, note_annotations)
 
         # write channel annot with duration
@@ -194,7 +191,7 @@ class TestMefWriter(TestCase):
         self.mef_writer.write_data(test_data_1, channel, start_time, fs, precision=precision)
 
         # create annotation with duration
-        starts = np.arange(start_time, end_time, 1e5, dtype=np.int64)
+        starts = np.arange(start_time, end_time, 1e5)
         text = ['test'] * len(starts)
         types = ['EDFA'] * len(starts)
         duration = [10025462] * len(starts)

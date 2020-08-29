@@ -341,18 +341,17 @@ class MefWriter:
 
         # check int of time column
         if not np.issubdtype(annotations['time'].dtype, np.int64):
-            annotations['time'] = annotations['time'].astype(np.int)
+            annotations['time'] = annotations['time'].astype(np.int64)
 
         # check duration for int
         if 'duration' in annotations.columns:
             if not np.issubdtype(annotations['duration'].dtype, np.int64):
-                annotations['duration'] = annotations['duration'].astype(np.int)
+                annotations['duration'] = annotations['duration'].astype(np.int64)
 
         start_time = annotations['time'].min()
         end_time = annotations['time'].max()
         record_list = annotations.to_dict('records')
-        print('YYYYYYYY')
-        print(start_time, end_time)
+
         # read old annotations
         print(' Reading previously stored annotations...')
         previous_list = self._read_annotation_record(channel=channel)
@@ -630,7 +629,6 @@ def check_data_integrity(original_data, converted_data, precision):
     idx_numbers = ~np.isnan(original_data)
     result_bin = np.allclose(coverted_float[idx_numbers], original_data[idx_numbers], atol=0.1**(precision-1))
     return result_bin
-
 
 
 

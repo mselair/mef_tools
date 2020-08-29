@@ -246,6 +246,9 @@ class MefWriter:
                 True on success
         """
 
+        print('WWWWWWWWWWWWWWWWWWWw')
+        print(start_uutc, end_uutc)
+
         # infer end_uutc from data
         if end_uutc is None:
             end_uutc = int64(start_uutc + (len(data_write)/sampling_freq * 1e6))
@@ -395,7 +398,8 @@ class MefWriter:
         return annot_list
 
     def _create_segment(self, data=None, channel=None, start_uutc=None, end_uutc=None, sampling_frequency=None, segment=0,):
-
+        print('SSSSSSSSSSSSSSSS')
+        print(start_uutc, end_uutc)
         if data.dtype != np.int32:
             raise AssertionError('[TYPE ERROR] - MEF file writer accepts only int32 signal datatype!')
 
@@ -418,7 +422,7 @@ class MefWriter:
         print(f"INFO: creating new segment data for channel: {channel}, segment: {segment}, fs: {sampling_frequency}, ufac:"
               f" {self.channel_info[channel]['ufact'][0]}, start: {start_uutc}, stop {end_uutc} ")
         self.session.write_mef_ts_segment_metadata(channel,
-                                                   int32(segment),
+                                                   segment,
                                                    self.pwd1,
                                                    self.pwd2,
                                                    start_uutc,
@@ -427,21 +431,22 @@ class MefWriter:
                                                    dict(self.section3_dict))
 
         self.session.write_mef_ts_segment_data(channel,
-                                               int64(segment),
+                                               segment,
                                                self.pwd1,
                                                self.pwd2,
                                                self.channel_info[channel]['mef_block_len'],
                                                data)
 
     def _append_block(self, data=None, channel=None, start_uutc=None, end_uutc=None, segment=0):
+        print('CCCCCCCCCCCCCCCCC')
+        print(start_uutc, end_uutc)
 
         if end_uutc < start_uutc:
             raise ValueError('End uutc timestamp lower than the start_uutc')
         if self.verbose:
             print(f"INFO: appending new data for channel: {channel}, segment: {segment}, ufac:"
                   f" {self.channel_info[channel]['ufact'][0]}, start: {start_uutc}, stop {end_uutc} ")
-        print('AAAAAAAAAAA')
-        print(start_uutc, end_uutc)
+
         self.session.append_mef_ts_segment_data(channel,
                                                   int64(segment),
                                                   self.pwd1,

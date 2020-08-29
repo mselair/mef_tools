@@ -32,6 +32,8 @@ class TestMefWriter(TestCase):
         start_time = np.int64(1578715810000000)
         # define end of data in uUTC time
         end_time = np.int64(start_time + 1e6 * secs_to_write)
+        print('AAAAAAAAAAAAAA')
+        print(start_time, end_time)
 
         writer = self.mef_writer
         writer.max_nans_written = 100

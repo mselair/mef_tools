@@ -5,6 +5,7 @@ jobs:
       language: python
       python:
         - "3.6"
+
   #  - name: "Linux - Python 3.7"
   #    os: linux
   #    language: python

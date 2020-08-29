@@ -221,7 +221,7 @@ class MefWriter:
             Parameters
             ----------
             data_write : np.ndarray
-                data to be written, data will be scaled a translated to int32 automatically if precision parameter is not given
+                data to be written, data will be scaled a translated to int64 automatically if precision parameter is not given
             channel : str
                 name of the stored channel
             start_uutc : int
@@ -233,7 +233,7 @@ class MefWriter:
             precision : int, optional
                 Number of floating point to be scaled above zero. Data are multiplied by 10**precision before writing and scale factor is
                 stored in metadata. used for transforming data to
-                int32, can be positive or 0 = no change
+                int64, can be positive or 0 = no change
                  in scale, only loss of decimals.
             new_segment : bool, optional
                 if new mef3 segment should be created
@@ -267,8 +267,8 @@ class MefWriter:
             # read precision from metadata - scale factor / can be different in new segment but not implemented
             precision = int(-1 * np.log10(self.channel_info[channel]['ufact'][0]))
 
-            # convert data to int32
-            data_converted = convert_data_to_int32(data_write, precision=precision)
+            # convert data to int64
+            data_converted = convert_data_to_int64(data_write, precision=precision)
 
             # check new segment flag
             segment = self.channel_info[channel]['n_segments']
@@ -283,9 +283,9 @@ class MefWriter:
                 print(f'INFO: precision set to {precision}')
 
             ufact = np.round(0.1**precision, precision)
-            # convert data to int32
+            # convert data to int64
             self.channel_info[channel] = {'mef_block_len': self.get_mefblock_len(sampling_freq), 'ufact': [ufact]}
-            data_converted = convert_data_to_int32(data_write, precision=precision)
+            data_converted = convert_data_to_int64(data_write, precision=precision)
 
         # discont handler writes fragmented intervals ( skip nans greater than specified)
         if discont_handler:
@@ -395,8 +395,8 @@ class MefWriter:
 
     def _create_segment(self, data=None, channel=None, start_uutc=None, end_uutc=None, sampling_frequency=None, segment=0, ):
 
-        if data.dtype != np.int32:
-            raise AssertionError('[TYPE ERROR] - MEF file writer accepts only int32 signal datatype!')
+        if data.dtype != np.int64:
+            raise AssertionError('[TYPE ERROR] - MEF file writer accepts only int64 signal datatype!')
 
         if end_uutc < start_uutc:
             raise ValueError('End uutc timestamp lower than the start_uutc')
@@ -533,9 +533,9 @@ def scale_signal(data, a, b):
     return temp_arr * new_range + a
 
 
-def check_int32_dynamic_range(x_min, x_max, alpha):
-    min_value = np.iinfo(np.int32).min
-    if (x_min * alpha < min_value) & (x_max * alpha > np.iinfo(np.int32).max):
+def check_int64_dynamic_range(x_min, x_max, alpha):
+    min_value = np.iinfo(np.int64).min
+    if (x_min * alpha < min_value) & (x_max * alpha > np.iinfo(np.int64).max):
         return False
     else:
         return True
@@ -552,16 +552,16 @@ def infer_conversion_factor(data):
     data_max = np.nanmax(data)
     data_min = np.nanmin(data)
     alpha = 10 ** precision
-    while (not check_int32_dynamic_range(data_min, data_max, alpha)) & (precision != 0):
+    while (not check_int64_dynamic_range(data_min, data_max, alpha)) & (precision != 0):
         precision -= 1
         print(f" WARNING: dynamic range saturated, precision decreased to {precision}")
         alpha = 10 ** precision
     return precision
 
 
-def convert_data_to_int32(data, precision=None):
+def convert_data_to_int64(data, precision=None):
     if precision is None:
-        print(f"Info: convert data to int32:  precision is not given, inferring...")
+        print(f"Info: convert data to int64:  precision is not given, inferring...")
         precision = infer_conversion_factor(data)
         print(f"Info: precision set to {precision}")
 
@@ -570,9 +570,9 @@ def convert_data_to_int32(data, precision=None):
         precision = 0
 
     deciround = np.round(data, decimals=precision)
-    data_int32 = np.empty(shape=deciround.shape, dtype=np.int32)
-    data_int32[:] = 10 ** precision * (deciround)
-    return data_int32
+    data_int64 = np.empty(shape=deciround.shape, dtype=np.int64)
+    data_int64[:] = 10 ** precision * (deciround)
+    return data_int64
 
 
 def find_intervals_binary_vector(input_bin_vector, fs, start_uutc, samples_of_nans_allowed=None):

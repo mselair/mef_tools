@@ -1,17 +1,17 @@
 .. image:: https://travis-ci.org/xmival00/MEF_Tools.svg?branch=master
-    :target: https://pypi.org/project/mselair-aisc/
+    :target: https://pypi.org/project/mef-tools/
 
 .. image:: https://readthedocs.org/projects/mef-tools/badge/?version=latest
     :target: https://mef-tools.readthedocs.io/en/latest/?badge=latest
 
 .. image:: https://img.shields.io/badge/pypi-1.0.7-orange
-    :target: https://pypi.org/project/mselair-aisc/
+    :target: https://pypi.org/project/mef-tools/
 
 .. image:: https://img.shields.io/pypi/pyversions/Django
-    :target: https://pypi.org/project/mselair-aisc/
+    :target: https://pypi.org/project/mef-tools/
 
 .. image:: https://img.shields.io/badge/platform-windows%20%7C%20macos%20%7C%20linux-lightgrey
-    :target: https://pypi.org/project/mselair-aisc/
+    :target: https://pypi.org/project/mef-tools/
 
 
 

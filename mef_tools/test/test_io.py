@@ -175,6 +175,7 @@ class TestMefWriter(TestCase):
             read_annotations['time'] += offset
         print('OOOOOOOOOOOOOOOOOO')
         print(read_annotations.iloc[0])
+        print(note_annotations.iloc[0])
         print(read_annotations.iloc[0]['time'].dtype, note_annotations.iloc[0]['time'].dtype)
         pd.testing.assert_frame_equal(read_annotations, note_annotations)
 

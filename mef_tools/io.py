@@ -246,9 +246,6 @@ class MefWriter:
                 True on success
         """
 
-        print('WWWWWWWWWWWWWWWWWWWw')
-        print(start_uutc, end_uutc)
-
         # infer end_uutc from data
         if end_uutc is None:
             end_uutc = int64(start_uutc + (len(data_write)/sampling_freq * 1e6))
@@ -269,7 +266,7 @@ class MefWriter:
                 print(' Sampling frequency of provided data does not match fs of already written data')
                 return None
             # read precision from metadata - scale factor / can be different in new segment but not implemented
-            precision = int64(-1 * np.log10(self.channel_info[channel]['ufact'][0]))
+            precision = int(-1 * np.log10(self.channel_info[channel]['ufact'][0]))
 
             # convert data to int32
             data_converted = convert_data_to_int32(data_write, precision=precision)
@@ -398,8 +395,6 @@ class MefWriter:
         return annot_list
 
     def _create_segment(self, data=None, channel=None, start_uutc=None, end_uutc=None, sampling_frequency=None, segment=0,):
-        print('SSSSSSSSSSSSSSSS')
-        print(start_uutc, end_uutc)
         if data.dtype != np.int32:
             raise AssertionError('[TYPE ERROR] - MEF file writer accepts only int32 signal datatype!')
 
@@ -438,9 +433,6 @@ class MefWriter:
                                                data)
 
     def _append_block(self, data=None, channel=None, start_uutc=None, end_uutc=None, segment=0):
-        print('CCCCCCCCCCCCCCCCC')
-        print(start_uutc, end_uutc)
-
         if end_uutc < start_uutc:
             raise ValueError('End uutc timestamp lower than the start_uutc')
         if self.verbose:

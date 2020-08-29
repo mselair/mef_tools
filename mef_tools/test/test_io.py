@@ -32,8 +32,6 @@ class TestMefWriter(TestCase):
         start_time = np.int64(1578715810000000)
         # define end of data in uUTC time
         end_time = np.int64(start_time + 1e6 * secs_to_write)
-        print('AAAAAAAAAAAAAA')
-        print(start_time, end_time)
 
         writer = self.mef_writer
         writer.max_nans_written = 100
@@ -52,18 +50,7 @@ class TestMefWriter(TestCase):
         read_data = writer.session.read_ts_channels_uutc(channel, [start_time, end_time])
         read_data_nans = np.isnan(read_data)
         write_data_nans = np.isnan(test_data_1)
-        print('XXXXXXXXXXX')
-        print(start_time, end_time)
-        print(read_data_nans.dtype, write_data_nans.dtype)
-        print(read_data_nans.shape, write_data_nans.shape)
-        print(test_data_1.dtype, read_data.dtype)
-        print(test_data_1.shape, read_data.shape)
-        print(test_data_1.min(), read_data.min())
-        print(test_data_1.max(), read_data.max())
-        print(np.nanmin(test_data_1), np.nanmin(read_data))
-        print(np.nanmax(test_data_1), np.nanmax(read_data))
-        print(test_data_1[::100])
-        print(read_data[::100])
+
 
         self.assertTrue(np.array_equal(read_data_nans, write_data_nans))
         self.assertTrue(check_data_integrity(test_data_1, read_data, precision))

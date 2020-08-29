@@ -71,8 +71,8 @@ class TestMefWriter(TestCase):
         secs_to_append = 5
         discont_length = 1
 
-        append_time = end_time + int(discont_length * 1e6)
-        append_end = int(append_time + 1e6 * secs_to_append)
+        append_time = end_time + np.int64(discont_length * 1e6)
+        append_end = np.int64(append_time + 1e6 * secs_to_append)
         test_data_2 = create_pink_noise(fs, secs_to_append, low_b, up_b)
         writer.write_data(test_data_2, channel, append_time, fs)
 

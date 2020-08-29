@@ -620,14 +620,14 @@ def find_intervals_binary_vector(input_bin_vector, fs, start_uutc, samples_of_na
 
     # final fragment segments
     connected_detected_intervals = pd.DataFrame(columns=['start_samples', 'stop_samples', ])
-    connected_detected_intervals['start_samples'] = overlap_starts.astype(int)
-    connected_detected_intervals['stop_samples'] = overlap_ends.astype(int)
+    connected_detected_intervals['start_samples'] = overlap_starts.astype(int64)
+    connected_detected_intervals['stop_samples'] = overlap_ends.astype(int64)
     connected_detected_intervals = connected_detected_intervals.append(lonely_segments, ignore_index=True)
     connected_detected_intervals = connected_detected_intervals.sort_values(by='start_samples').reset_index(drop=True)
 
     # calculate uutc time of intervals
-    connected_detected_intervals['start_uutc'] = (connected_detected_intervals['start_samples'] / fs * 1e6 + start_uutc).astype(int)
-    connected_detected_intervals['stop_uutc'] = (connected_detected_intervals['stop_samples'] / fs * 1e6 + start_uutc).astype(int)
+    connected_detected_intervals['start_uutc'] = (connected_detected_intervals['start_samples'] / fs * 1e6 + start_uutc).astype(int64)
+    connected_detected_intervals['stop_uutc'] = (connected_detected_intervals['stop_samples'] / fs * 1e6 + start_uutc).astype(int64)
     return connected_detected_intervals
 
 

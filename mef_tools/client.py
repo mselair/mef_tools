@@ -17,7 +17,6 @@ class MefClient:
     """
     MEF Database client - asks for data
     """
-
     RESPONSE_WAIT = 30
     def __init__(self, ports, server_ip):
         context = zmq.Context(1)

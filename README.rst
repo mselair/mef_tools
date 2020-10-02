@@ -4,7 +4,7 @@
 .. image:: https://readthedocs.org/projects/mef-tools/badge/?version=latest
     :target: https://mef-tools.readthedocs.io/en/latest/?badge=latest
 
-.. image:: https://img.shields.io/badge/pypi-1.0.7-orange
+.. image:: https://img.shields.io/badge/pypi-1.0.8-orange
     :target: https://pypi.org/project/mef-tools/
 
 .. image:: https://img.shields.io/pypi/pyversions/Django

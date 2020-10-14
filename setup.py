@@ -60,7 +60,6 @@ setuptools.setup(
         'pyzmq',
         'tqdm',
         'sshtunnel',
-        'pyedflib',
         'pymef',
         'python-dateutil'
     ]

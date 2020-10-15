@@ -210,7 +210,7 @@ class MefWriter:
             self.channel_info[ch]['mef_block_len'] = int64(self.get_mefblock_len(self.channel_info[ch]['fsamp'][0]))
 
     def write_data(self, data_write, channel, start_uutc, sampling_freq, end_uutc=None, precision=None, new_segment=False,
-                   discont_handler=True):
+                   discont_handler=True, reload_metadata=True):
         """
             General method for writing any data to the session. Method handles new channel data or appending to existing channel data
             automatically. Discont handler
@@ -227,8 +227,8 @@ class MefWriter:
                 name of the stored channel
             start_uutc : int64
                 uutc timestamp of the first sample
-            sampling_freq : int
-                only int sampling freq is supported
+            sampling_freq : float
+                only 0.1 Hz resolution is tested
             end_uutc : int, optional
                 end of the data uutc timestamp, if less data is provided than end_uutc - start_uutc nans gap will be inserted to the data
             precision : int, optional
@@ -240,6 +240,12 @@ class MefWriter:
                 if new mef3 segment should be created
             discont_handler: bool, optional
                 disconnected segments will be stored in intervals if the gap in data is higher than max_nans_written property
+            reload_metadata: bool, optional
+                default: true. Parameter Controls reloading of metadata after writing new data - frequent call of write method on short
+                signals can
+                slow down
+                writing. When false appending is not protected for correct endtime check, but data write is faster. Metadata are always
+                reloaded with new segment.
             Returns
             -------
             out : bool
@@ -312,6 +318,7 @@ class MefWriter:
                 else:
                     self._append_block(data=data_part, channel=channel, start_uutc=row['start_uutc'], end_uutc=row['stop_uutc'],
                                        segment=segment)
+            reload_metadata = True
         # append to a last segment
         else:
             segment -= 1
@@ -320,7 +327,8 @@ class MefWriter:
                 self._append_block(data=data_part, channel=channel, start_uutc=row['start_uutc'], end_uutc=row['stop_uutc'],
                                    segment=segment)
 
-        self._reload_session_info()
+        if reload_metadata:
+            self._reload_session_info()
         print('INFO: data write method finished.')
         return True
 

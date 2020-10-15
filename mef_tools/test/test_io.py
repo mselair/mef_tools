@@ -51,7 +51,6 @@ class TestMefWriter(TestCase):
         read_data_nans = np.isnan(read_data)
         write_data_nans = np.isnan(test_data_1)
 
-
         self.assertTrue(np.array_equal(read_data_nans, write_data_nans))
         self.assertTrue(check_data_integrity(test_data_1, read_data, precision))
         # append new data
@@ -141,6 +140,38 @@ class TestMefWriter(TestCase):
         self.assertTrue(np.array_equal(read_data_nans, write_data_nans))
         self.assertTrue(np.allclose(test_data_5[~write_data_nans], read_data[~read_data_nans], atol=0.1 ** (precision - 1)))
         self.test_write_annotations()
+
+    def test_float_fs(self):
+
+        secs_to_write = 3500
+        secs_to_seg2 = 5
+
+        # define start of data uutc in uUTC time
+        start_time = np.int64(1578715810000000)
+        # define end of data in uUTC time
+        end_time = np.int64(start_time + 1e6 * secs_to_write)
+
+        writer = self.mef_writer
+        writer.max_nans_written = 0
+        writer.mef_block_len = 100
+
+        # create test data
+        fs = 0.1
+        low_b = -10
+        up_b = 10
+        precision = 3
+        test_data_1 = create_pink_noise(fs, secs_to_write, low_b, up_b)
+        channel = 'test_channel_1'
+        test_data_1[120:150] = np.nan
+        test_data_1[854:859] = np.nan
+        writer.write_data(test_data_1, channel, start_time, fs, precision=precision)
+        # check stored data and check nans
+        read_data = writer.session.read_ts_channels_uutc(channel, [start_time, end_time])
+        read_data_nans = np.isnan(read_data)
+        write_data_nans = np.isnan(test_data_1)
+
+        self.assertTrue(np.array_equal(read_data_nans, write_data_nans))
+        self.assertTrue(check_data_integrity(test_data_1, read_data, precision))
 
     def test_write_annotations(self):
         # define start of data uutc in uUTC time

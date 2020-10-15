@@ -126,7 +126,6 @@ class MefReader:
         return annot_list
 
 
-
 class MefWriter:
     """
         MefWriter class is a high level util class for easy mef3 data writing.
@@ -140,6 +139,7 @@ class MefWriter:
         self.channel_info = {}
 
         # ------- properties ------
+        self._mef_block_len = None
         self._record_offset = 0
         self.verbose = verbose
         # maximal nans in continuous block to be stored in data and not indexed
@@ -210,7 +210,7 @@ class MefWriter:
             self.channel_info[ch]['mef_block_len'] = int64(self.get_mefblock_len(self.channel_info[ch]['fsamp'][0]))
 
     def write_data(self, data_write, channel, start_uutc, sampling_freq, end_uutc=None, precision=None, new_segment=False,
-                   discont_handler=True):
+                   discont_handler=True, reload_metadata=True):
         """
             General method for writing any data to the session. Method handles new channel data or appending to existing channel data
             automatically. Discont handler
@@ -227,8 +227,8 @@ class MefWriter:
                 name of the stored channel
             start_uutc : int64
                 uutc timestamp of the first sample
-            sampling_freq : int
-                only int sampling freq is supported
+            sampling_freq : float
+                only 0.1 Hz resolution is tested
             end_uutc : int, optional
                 end of the data uutc timestamp, if less data is provided than end_uutc - start_uutc nans gap will be inserted to the data
             precision : int, optional
@@ -240,6 +240,12 @@ class MefWriter:
                 if new mef3 segment should be created
             discont_handler: bool, optional
                 disconnected segments will be stored in intervals if the gap in data is higher than max_nans_written property
+            reload_metadata: bool, optional
+                default: true. Parameter Controls reloading of metadata after writing new data - frequent call of write method on short
+                signals can
+                slow down
+                writing. When false appending is not protected for correct endtime check, but data write is faster. Metadata are always
+                reloaded with new segment.
             Returns
             -------
             out : bool
@@ -291,7 +297,7 @@ class MefWriter:
         # discont handler writes fragmented intervals ( skip nans greater than specified)
         if discont_handler:
             if self.max_nans_written == 'fs':
-                max_nans = sampling_freq
+                max_nans = int(sampling_freq)
             else:
                 max_nans = self.max_nans_written
 
@@ -312,6 +318,7 @@ class MefWriter:
                 else:
                     self._append_block(data=data_part, channel=channel, start_uutc=row['start_uutc'], end_uutc=row['stop_uutc'],
                                        segment=segment)
+            reload_metadata = True
         # append to a last segment
         else:
             segment -= 1
@@ -320,7 +327,8 @@ class MefWriter:
                 self._append_block(data=data_part, channel=channel, start_uutc=row['start_uutc'], end_uutc=row['stop_uutc'],
                                    segment=segment)
 
-        self._reload_session_info()
+        if reload_metadata:
+            self._reload_session_info()
         print('INFO: data write method finished.')
         return True
 
@@ -448,12 +456,16 @@ class MefWriter:
                                                   self.channel_info[channel]['mef_block_len'],
                                                   data)
 
-    @staticmethod
-    def get_mefblock_len(fs):
+    def get_mefblock_len(self, fs):
+        if self.mef_block_len is not None:
+            return self.mef_block_len
         if fs >= 5000:
-            return fs
+            return int(fs)
         else:
-            return fs * 10
+            if fs < 0:
+                return int(fs * 100)
+            else:
+                return int(fs * 10)
 
     @property
     def max_nans_written(self):
@@ -486,6 +498,13 @@ class MefWriter:
     def record_offset(self, new_offset):
         self._record_offset = new_offset
 
+    @property
+    def mef_block_len(self):
+        return self._mef_block_len
+
+    @mef_block_len.setter
+    def mef_block_len(self, new_mefblock_len):
+        self._mef_block_len = new_mefblock_len
 
 # Functions
 def voss(nrows, ncols=32):
@@ -516,7 +535,7 @@ def voss(nrows, ncols=32):
 
 
 def create_pink_noise(fs, seg_len, low_bound, up_bound):
-    n = fs * seg_len
+    n = int(fs * seg_len)
     if n > 20 * 1e6:
         raise ValueError('too many samples to generate')
     # if
@@ -577,7 +596,7 @@ def convert_data_to_int32(data, precision=None):
 
 def find_intervals_binary_vector(input_bin_vector, fs, start_uutc, samples_of_nans_allowed=None):
     if samples_of_nans_allowed is None:
-        samples_of_nans_allowed = fs
+        samples_of_nans_allowed = int(fs)
 
     vector = np.concatenate((np.array([0]), input_bin_vector, np.array([0])))
     diff_vector = np.diff(vector)

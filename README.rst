@@ -147,14 +147,19 @@ Example
     writer2.write_annotations(note_annotations, channel=channel )
 
     # -------- reader example -----------
-
+    
+    pass2 = 'filepassword'
     Reader = MefReader(path_file_to, password=pass2)
     signals = []
     
+    properties = Reader.properties
+    print(properties)
+ 
     for channel in Reader.channels:
-        x = Reader.get_data(key)
-        x = Reader.get_data(key, Reader.get_property('start_time', key), Reader.get_property('end_time', key))
-        print('Overall Difference in signal ', key, ' ', (df[key][:-1] - x).sum())
+        x = Reader.get_data(channel) # reads all the data in the given channel
+        start_time = Reader.get_property('start_time', channel) # timestamp in micro seconds
+        end_time = Reader.get_property('end_time', channel)
+        x = Reader.get_data(channel, start_time, start_time+10*1e6) # reads the first 10 seconds of the signal
         signals.append(x)
     
 

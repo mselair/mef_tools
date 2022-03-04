@@ -105,8 +105,8 @@ jobs:
 #              python-version: '3.10'
 #              docker_python_version: 'cp310-cp310'
 #
-#            - os: macos-latest
-#              python-version: '3.6'
+            - os: macos-latest
+              python-version: '3.6'
 #            - os: macos-latest
 #              python-version: '3.7'
 #            - os: macos-latest
@@ -116,8 +116,8 @@ jobs:
 #            - os: macos-latest
 #              python-version: '3.10'
 #
-#            - os: windows-latest
-#              python-version: '3.6'
+            - os: windows-latest
+              python-version: '3.6'
 #            - os: windows-latest
 #              python-version: '3.7'
 #            - os: windows-latest
@@ -138,23 +138,11 @@ jobs:
         git submodule sync --recursive
         git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
 
-    - name: Build wheels (Manylinux)
-      if: startsWith(matrix.os, 'ubuntu')
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN_MEF_TOOLS }}
-      uses: RalfG/python-wheels-manylinux-build@v0.3.4-manylinux2010_x86_64
-      with:
-        python-versions: ${{ matrix.docker_python_version }}
-        build-requirements: 'numpy'
-        pip-wheel-args: '-w ./dist'
-
-
     # Set up python after manylinux build otherwise it interferes with auditwheel in the image
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: 3.9
 
     - name: Install dependencies
       run: |
@@ -163,25 +151,12 @@ jobs:
         pip install twine
         pip install wheel
 
-    - name: Build wheels (Windows and MacOS)
-      if: startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'windows')
-      run: |
-        python setup.py sdist bdist_wheel
-
-    - name: Publish package (Windows and MacOS)
-      if: startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'windows')
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN_MEF_TOOLS }}
-      run: |
-        twine upload --skip-existing dist/mef_tools*
-
     - name: Publish package (Linux)
       if: startsWith(matrix.os, 'ubuntu')
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN_MEF_TOOLS }}
       run: |
-        twine upload --skip-existing dist/mef_tools*manylinux*
+        twine upload --skip-existing
 
 

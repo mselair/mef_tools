@@ -142,7 +142,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: 3.9
+        python-version:  ${{ matrix.python-version }}
 
     - name: Install dependencies
       run: |
@@ -151,8 +151,7 @@ jobs:
         pip install twine
         pip install wheel
 
-    - name: Publish package (Linux)
-      if: startsWith(matrix.os, 'ubuntu')
+    - name: Publish package
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN_MEF_TOOLS }}

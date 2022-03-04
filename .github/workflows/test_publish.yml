@@ -62,11 +62,14 @@ jobs:
         python -m pip install --upgrade pip
         pip install setuptools
         pip install numpy
+
     - name: Test package
       run:
-        python3 setup.py bdist_wheel sdist || python setup.py bdist_wheel sdist
-        pip3 install .
-        python3 -m unittest || python -m unittest
+        python -m pip install --upgrade pip
+        pip install setuptools
+        python setup.py bdist_wheel sdist
+        pip install .
+        python -m unittest
 
   release:
     if: contains(github.ref, 'refs/tags/')

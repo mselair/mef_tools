@@ -65,9 +65,12 @@ jobs:
         pip install numpy
 
 
-    - name: Test package
+    - name: Setup package
       run:
         python setup.py
+
+    - name: Test package
+      run:
         python -m unittest
 #        pip install .
 #        python -m unittest

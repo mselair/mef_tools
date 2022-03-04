@@ -49,11 +49,12 @@ Example
     # pymef - pip install pymef
     # numpy - if anaconda conda install -c anaconda numpy; else pip install numpy
     # pandas - same as numpy
-    
+
     # imports
     import numpy as np
     from mef_tools.io import MefWriter, MefReader, create_pink_noise
     import os
+    import pandas as pd
 
     # path to data
     session_name = 'session'
@@ -76,7 +77,7 @@ Example
     writer = MefWriter(session_path, overwrite=True, password1=pass1, password2=pass2)
 
     # property max nans in continuous block set (default is equal to fs)
-    writer.max_nans_written = 100
+    writer.max_nans_written = 0
     # property units of data - default uV
     writer.data_units = 'mV'
 
@@ -148,15 +149,15 @@ Example
 
     # -------- reader example -----------
     
-    pass2 = 'filepassword'
-    Reader = MefReader(path_file_to, password=pass2)
+    pass2 = 'pass2'
+    Reader = MefReader(mef_session_path, password2=pass2)
     signals = []
     
     properties = Reader.properties
     print(properties)
  
     for channel in Reader.channels:
-        x = Reader.get_data(channel) # reads all the data in the given channel
+        # x = Reader.get_data(channel) # reads all the data in the given channel
         start_time = Reader.get_property('start_time', channel) # timestamp in micro seconds
         end_time = Reader.get_property('end_time', channel)
         x = Reader.get_data(channel, start_time, start_time+10*1e6) # reads the first 10 seconds of the signal

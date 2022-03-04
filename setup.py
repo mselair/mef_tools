@@ -23,7 +23,6 @@ if mo:
 else:
     raise RuntimeError("Unable to find version string in %s." % (VERSIONFILE,))
 
-
 setuptools.setup(
     name="mef_tools",
     version=verstr,
@@ -34,8 +33,8 @@ setuptools.setup(
     author_email="mivalt.filip@mayo.edu",
 
 
-    description="Advanced tools for handling MEF file format using pymef - python wrapper.",
-    long_description="Advanced tools for handling MEF file format using pymef - python wrapper. MefWriter and MefReader are high-level API tools containing all headers required for writing a mef file.",
+    description="Tools for handling Multiscale Eleptrophysiology Format (MEF3) using pymef library.",
+    long_description="MefWriter and MefReader are high-level API tools containing all headers required for convenient MEF3 file writing and reading.",
     long_description_content_type="",
 
     packages=setuptools.find_packages(),

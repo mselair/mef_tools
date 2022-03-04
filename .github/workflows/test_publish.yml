@@ -81,7 +81,7 @@ jobs:
 
 
   release:
-    if: contains(github.ref, 'refs/tags/')
+#    if: contains(github.ref, 'refs/tags/')
     needs: test
 
     runs-on: ${{ matrix.os }}
@@ -137,6 +137,7 @@ jobs:
         auth_header="$(git config --local --get http.https://github.com/.extraheader)"
         git submodule sync --recursive
         git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+
     - name: Build wheels (Manylinux)
       if: startsWith(matrix.os, 'ubuntu')
       env:
@@ -147,6 +148,7 @@ jobs:
         python-versions: ${{ matrix.docker_python_version }}
         build-requirements: 'numpy'
         pip-wheel-args: '-w ./dist'
+
 
     # Set up python after manylinux build otherwise it interferes with auditwheel in the image
     - name: Set up Python

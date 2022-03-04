@@ -67,6 +67,7 @@ jobs:
 
     - name: Test package
       run:
-        python setup.py unittest
+        python setup.py
+        python -m unittest
 #        pip install .
 #        python -m unittest

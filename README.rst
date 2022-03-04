@@ -1,5 +1,5 @@
-.. image:: https://travis-ci.org/xmival00/MEF_Tools.svg?branch=master
-    :target: https://app.travis-ci.com/mselair/mef_tools.svg?branch=master
+.. image:: https://github.com/mselair/mef_tools/actions/workflows/test_publish.yml/badge.svg
+    :target: https://pypi.org/project/mef-tools/
 
 .. image:: https://readthedocs.org/projects/mef-tools/badge/?version=latest
     :target: https://mef-tools.readthedocs.io/en/latest/?badge=latest

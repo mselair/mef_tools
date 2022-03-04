@@ -160,7 +160,6 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install setuptools
-        pip install numpy
         pip install twine
         pip install wheel
 
@@ -169,24 +168,20 @@ jobs:
       run: |
         python setup.py sdist bdist_wheel
 
-    - name: Install package
-      run:
-        pip install .
+    - name: Publish package (Windows and MacOS)
+      if: startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'windows')
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN_MEF_TOOLS }}
+      run: |
+        twine upload --skip-existing dist/mef_tools*
 
-#    - name: Publish package (Windows and MacOS)
-#      if: startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'windows')
-#      env:
-#        TWINE_USERNAME: __token__
-#        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN_MEF_TOOLS }}
-#      run: |
-#        twine upload --skip-existing dist/pymef*
-#
-#    - name: Publish package (Linux)
-#      if: startsWith(matrix.os, 'ubuntu')
-#      env:
-#        TWINE_USERNAME: __token__
-#        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN_MEF_TOOLS }}
-#      run: |
-#        twine upload --skip-existing dist/pymef*manylinux*
-#
+    - name: Publish package (Linux)
+      if: startsWith(matrix.os, 'ubuntu')
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN_MEF_TOOLS }}
+      run: |
+        twine upload --skip-existing dist/mef_tools*manylinux*
+
 

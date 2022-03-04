@@ -6,7 +6,7 @@
 
 
 from .io import *
-__version__ = '1.1.1'
+__version__ = '1.1.0'
 
 import os
 # Check windows or linux and sets separator

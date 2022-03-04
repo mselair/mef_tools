@@ -68,6 +68,7 @@ jobs:
     - name: Setup package
       run:
         python setup.py bdist_wheel sdist
+        pip install .
 
     - name: Test package
       run:

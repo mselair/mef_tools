@@ -3,16 +3,19 @@
 Download this repository into a folder.
 
 ## Option 1
+```bash
+pip install mef-tools
+```
 
-### Step 1
+## Option 2
 
 Open command line where you want to download this repository and download it.
 
 ```bash
-git clone https://github.com/xmival00/MEF_Tools
+git clone https://github.com/mselair/mef_tools
 ```
 
-### Step 2
+### Step 3
 Activate environment into which you want to install this package.
 ```bash
 conda activate myEnv
@@ -37,10 +40,7 @@ bash setup.sh
 Remove the folder
 
 
-## Option 2
-```bash
-pip install mef-tools
-```
+
 
 
 

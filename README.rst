@@ -176,6 +176,7 @@ __________________________
 In this example, we create a MefReader instance, print out the properties of the MEF file, and then read the first 10 seconds of data from each channel. The data from each channel is appended to a list.
 
 .. code-block:: python
+
     Reader = MefReader(session_path, password2=pass2)
     signals = []
 
@@ -187,7 +188,4 @@ In this example, we create a MefReader instance, print out the properties of the
         end_time = Reader.get_property('end_time', channel)
         x = Reader.get_data(channel, start_time, start_time+10*1e6)
         signals.append(x)
-
-.
-
 

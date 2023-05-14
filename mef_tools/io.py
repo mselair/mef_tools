@@ -214,9 +214,9 @@ class MefReader:
         data = self.get_raw_data(channels, t_stamp1, t_stamp2)
         if isinstance(channels, list):
             for idx, ch_name in enumerate(channels):
-                data[idx] = data[idx].astype(np.float) * self.get_channel_info(ch_name)['ufact'][0]
+                data[idx] = data[idx].astype(np.float64) * self.get_channel_info(ch_name)['ufact'][0]
         else:
-            data = data[0].astype(np.float) * self.get_channel_info(channels)['ufact'][0]
+            data = data[0].astype(np.float64) * self.get_channel_info(channels)['ufact'][0]
         return data
 
     def get_annotations(self, channel=None):

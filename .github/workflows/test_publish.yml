@@ -85,8 +85,8 @@ jobs:
     strategy:
       matrix:
         include:
-            - os: ubuntu-latest
-              python-version: '3.6'
+            - os: ubuntu-20.04
+              python-version: '3.6.12'
               docker_python_version: 'cp36-cp36m'
     steps:
 

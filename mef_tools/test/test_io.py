@@ -236,7 +236,7 @@ class TestMefWriter(TestCase):
         read_annotations = read_annotations[cols]
 
         # total_annots = new_annotations.append(note_annotations, ignore_index=True)
-        total_annots = pd.concat([note_annotations, new_annotations], ignore_index=True)
+        total_annots = pd.concat([new_annotations, note_annotations], ignore_index=True)
 
         pd.testing.assert_frame_equal(read_annotations, total_annots)
 

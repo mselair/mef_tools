@@ -57,8 +57,6 @@ setuptools.setup(
         'numpy',
         'pandas',
         'scipy',
-        'sqlalchemy',
-        'pyzmq',
         'tqdm',
         'sshtunnel',
         'pymef',

@@ -5,13 +5,11 @@
 # LICENSE file in the root directory of this source tree.
 
 
-from .io import *
-__version__ = '1.1.1'
+from .io import MefWriter, MefReader
+__version__ = '1.2.0'
 
 import os
-# Check windows or linux and sets separator
-if os.name == 'nt': DELIMITER = '\\'
-else: DELIMITER = '/'
+DELIMITER = os.path.sep
 
 
 

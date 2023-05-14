@@ -188,6 +188,6 @@ In this example, we create a MefReader instance, print out the properties of the
         x = Reader.get_data(channel, start_time, start_time+10*1e6)
         signals.append(x)
 
-
+.
 
 

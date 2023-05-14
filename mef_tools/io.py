@@ -16,9 +16,28 @@ from numpy import int64
 
 
 class MefReader:
+    """
+    Class to handle reading of MEF files.
+
+    Attributes
+    ----------
+    __version__ : str
+        Version of the MefReader class.
+    """
+
     __version__ = '2.0.0'
 
     def __init__(self, session_path, password2=None):
+        """
+                Initializes the MefReader object.
+
+                Parameters
+                ----------
+                session_path : str
+                    Path to the MEF session.
+                password2 : str, optional
+                    Secondary password for the session. Default is None.
+        """
         self.session = mef_session.MefSession(session_path, password2, True)
         self.bi = self.session.read_ts_channel_basic_info()
 
@@ -28,20 +47,55 @@ class MefReader:
                                           'for a single channels. This feature is not implemented.')
 
     def __del__(self):
+        """
+        Destructor for the MefReader object, ensures the session is closed.
+        """
         self.close()
 
     @property
     def channels(self):
+        """
+        Returns a list of all channels present in the session.
+
+        Returns
+        -------
+        list
+            List of channels.
+        """
         return [ch_info['name'] for ch_info in self.bi]
 
     @property
     def properties(self):
+        """
+        Returns a list of all unique properties across all channels in the session.
+
+        Returns
+        -------
+        list
+            List of unique properties.
+        """
         properties = []
         for ch_info in self.bi:
             properties += list(ch_info.keys())
         return list(np.unique(properties))
 
     def get_property(self, property_name, channel=None):
+        """
+        Returns the specified property for a given channel. If no channel is specified,
+        returns the property for all channels.
+
+        Parameters
+        ----------
+        property_name : str
+            Name of the property.
+        channel : str, optional
+            Name of the channel. If not provided, method returns property for all channels.
+
+        Returns
+        -------
+        list or str
+            Property or list of properties.
+        """
         if isinstance(channel, type(None)):
             props = []
             for ch_info in self.bi:
@@ -59,6 +113,20 @@ class MefReader:
         return None
 
     def get_channel_info(self, channel=None):
+        """
+        Returns information for a given channel. If no channel is specified,
+        returns information for all channels.
+
+        Parameters
+        ----------
+        channel : str, optional
+            Name of the channel. If not provided, method returns info for all channels.
+
+        Returns
+        -------
+        dict or list
+            Channel info or list of channel info.
+        """
         if isinstance(channel, type(None)):
             return self.bi
 
@@ -68,9 +136,29 @@ class MefReader:
         return None
 
     def close(self):
+        """
+        Closes the MEF session.
+        """
         self.session.close()
 
     def get_raw_data(self, channels, t_stamp1=None, t_stamp2=None):
+        """
+        Returns raw data for specified channels and time stamps.
+
+        Parameters
+        ----------
+        channels : int64, str, list, or numpy.ndarray
+            Channels for which to return data.
+        t_stamp1 : int64, optional
+            Start time stamp. If not provided, method uses the earliest time stamp.
+        t_stamp2 : int64, optional
+            End time stamp. If not provided, method uses the latest time stamp.
+
+        Returns
+        -------
+        numpy.ndarray
+            Array of raw data.
+        """
         channels_to_pick = []
 
         if isinstance(channels, int64):
@@ -105,6 +193,24 @@ class MefReader:
         return self.session.read_ts_channels_uutc(channels_to_pick, [t_stamp1, t_stamp2])
 
     def get_data(self, channels, t_stamp1=None, t_stamp2=None):
+        """
+        Returns processed data for specified channels and time stamps.
+
+        Parameters
+        ----------
+        channels : int64, str, list, or numpy.ndarray
+        Channels for which to return data.
+        t_stamp1 : int64, optional
+            Start time stamp. If not provided, method uses the earliest time stamp.
+        t_stamp2 : int64, optional
+            End time stamp. If not provided, method uses the latest time stamp.
+
+        Returns
+        -------
+        numpy.ndarray
+            Array of processed data.
+
+        """
         data = self.get_raw_data(channels, t_stamp1, t_stamp2)
         if isinstance(channels, list):
             for idx, ch_name in enumerate(channels):
@@ -113,8 +219,21 @@ class MefReader:
             data = data[0].astype(np.float) * self.get_channel_info(channels)['ufact'][0]
         return data
 
-
     def get_annotations(self, channel=None):
+        """
+        Returns annotations for a specified channel. If no channel is specified,
+        returns annotations for all channels.
+
+        Parameters
+        ----------
+        channel : str, optional
+            Name of the channel. If not provided, method returns annotations for all channels.
+
+        Returns
+        -------
+        list
+            List of annotations.
+        """
         annot_list = None
         try:
             if channel is None:
@@ -125,10 +244,16 @@ class MefReader:
             print('WARNING: read of annotations record failed, no annotations returned')
         return annot_list
 
-
 class MefWriter:
     """
-        MefWriter class is a high level util class for easy mef3 data writing.
+    MefWriter is a utility class for writing data in the MEF3 format. The class allows easy writing and appending of data to existing MEF3 files.
+
+    Attributes:
+        session_path: The path of the MEF3 session to be written.
+        overwrite: A boolean flag that if set to True, allows overwriting of existing files. Default is False.
+        password1: The password for level 1 encryption. Default is None. This password is needed only for while creating the session.
+        password2: The password for level 2 encryption. Default is None. This password is required for any read/write operation of an existing session.
+        verbose: A boolean flag that if set to True, enables verbose mode. Default is False.
     """
     __version__ = '2.0.0'
 
@@ -199,9 +324,11 @@ class MefWriter:
                 self.session = MefSession(session_path, password2, False, True)
 
     def __del__(self):
+        """Closes the session on object deletion."""
         self.session.close()
 
     def _reload_session_info(self):
+        """Reloads the session information from the MEF3 file."""
         self.session.reload()
         self.bi = self.session.read_ts_channel_basic_info()
         self.channel_info = {info['name']: deepcopy(info) for info in self.bi}
@@ -307,8 +434,9 @@ class MefWriter:
             df_intervals = pd.DataFrame(data={'start_samples': 0, 'stop_samples': len(data_converted), 'start_uutc': start_uutc,
                                               'stop_uutc': end_uutc}, index=[0])
 
-        print(f'INFO: total number of intervals to be written: {len(df_intervals)}')
-        print(f'Running...')
+        if self.verbose:
+            print(f'INFO: total number of intervals to be written: {len(df_intervals)}')
+            print(f'Running...')
         if new_segment:
             for i, row in df_intervals.iterrows():
                 data_part = data_converted[row['start_samples']:row['stop_samples']]
@@ -329,7 +457,8 @@ class MefWriter:
 
         if reload_metadata:
             self._reload_session_info()
-        print('INFO: data write method finished.')
+        if self.verbose:
+            print('INFO: data write method finished.')
         return True
 
     def write_annotations(self, annotations, channel=None):
@@ -380,6 +509,24 @@ class MefWriter:
         return
 
     def _write_annotation_record(self, start_time, end_time, record_list, channel=None):
+        """
+        Write annotation records into MEF file.
+
+        Parameters
+        ----------
+        start_time : int
+            Start time of the annotation record in microseconds.
+        end_time : int
+            End time of the annotation record in microseconds.
+        record_list : list
+            List of annotation records to be written.
+        channel : str, optional
+            Name of the channel for the annotation records.
+
+        Returns
+        -------
+        None
+        """
         record_offset = self.record_offset
         if channel is None:
             self.session.write_mef_records(self.pwd1, self.pwd2,  start_time,
@@ -390,6 +537,19 @@ class MefWriter:
         self.session.reload()
 
     def _read_annotation_record(self, channel=None):
+        """
+        Read annotation records from MEF file.
+
+        Parameters
+        ----------
+        channel : str, optional
+            Name of the channel for the annotation records.
+
+        Returns
+        -------
+        list
+            List of annotation records.
+        """
         try:
             annot_list = None
             if channel is None:
@@ -403,6 +563,28 @@ class MefWriter:
         return annot_list
 
     def _create_segment(self, data=None, channel=None, start_uutc=None, end_uutc=None, sampling_frequency=None, segment=0,):
+        """
+        Create a new segment in the MEF file.
+
+        Parameters
+        ----------
+        data : np.ndarray
+            Data to be written in the segment.
+        channel : str
+            Name of the channel for the segment.
+        start_uutc : int
+            Start timestamp of the segment in microseconds.
+        end_uutc : int
+            End timestamp of the segment in microseconds.
+        sampling_frequency : float
+            Sampling frequency of the data.
+        segment : int, optional
+            Segment index.
+
+        Returns
+        -------
+        None
+        """
         if data.dtype != np.int32:
             raise AssertionError('[TYPE ERROR] - MEF file writer accepts only int32 signal datatype!')
 
@@ -422,8 +604,9 @@ class MefWriter:
         self.section2_ts_dict['recording_duration'] = int64((end_uutc - start_uutc) / 1e6)
         self.section2_ts_dict['units_conversion_factor'] = self.channel_info[channel]['ufact'][0]
 
-        print(f"INFO: creating new segment data for channel: {channel}, segment: {segment}, fs: {sampling_frequency}, ufac:"
-              f" {self.channel_info[channel]['ufact'][0]}, start: {start_uutc}, stop {end_uutc} ")
+        if self.verbose:
+            print(f"INFO: creating new segment data for channel: {channel}, segment: {segment}, fs: {sampling_frequency}, ufac:"
+                  f" {self.channel_info[channel]['ufact'][0]}, start: {start_uutc}, stop {end_uutc} ")
         self.session.write_mef_ts_segment_metadata(channel,
                                                    segment,
                                                    self.pwd1,
@@ -441,6 +624,26 @@ class MefWriter:
                                                data)
 
     def _append_block(self, data=None, channel=None, start_uutc=None, end_uutc=None, segment=0):
+        """
+        Append a new block of data to a segment in the MEF file.
+
+        Parameters
+        ----------
+        data : np.ndarray
+            Data to be appended.
+        channel : str
+            Name of the channel for the block.
+        start_uutc : int
+            Start timestamp of the block in microseconds.
+        end_uutc : int
+            End timestamp of the block in microseconds.
+        segment : int, optional
+            Segment index.
+
+        Returns
+        -------
+        None
+        """
         if end_uutc < start_uutc:
             raise ValueError('End uutc timestamp lower than the start_uutc')
         if self.verbose:
@@ -457,6 +660,19 @@ class MefWriter:
                                                   data)
 
     def get_mefblock_len(self, fs):
+        """
+        Get the length of a MEF block.
+
+        Parameters
+        ----------
+        fs : float
+            Sampling frequency of the data.
+
+        Returns
+        -------
+        int
+            Length of the MEF block.
+        """
         if self.mef_block_len is not None:
             return self.mef_block_len
         if fs >= 5000:
@@ -469,10 +685,27 @@ class MefWriter:
 
     @property
     def max_nans_written(self):
+        """
+        Getter for the maximum number of NaN values allowed to be written. NaNs that are written as values will be written as the maximum value of the data type.
+        Recommended value is 0, which will not allow any NaN values to be written. The signal will be split into data blocks based on the NaN values. This might cause poor data compression if a lot of NaN segments are present in the data.
+
+        Returns
+        -------
+        int
+            The maximum number of NaN values allowed to be written.
+        """
         return self._max_nans_written
 
     @max_nans_written.setter
     def max_nans_written(self, max_samples):
+        """
+        Getter for the maximum number of NaN values allowed to be written. NaNs that are written as values will be written as the maximum value of the data type.
+        Recommended value is 0, which will not allow any NaN values to be written. The signal will be split into data blocks based on the NaN values. This might cause poor data compression if a lot of NaN segments are present in the data.
+
+        Returns
+        -------
+        None
+        """
         if (max_samples < 0) | (not (isinstance(max_samples, int))):
             print("incorrect value, please provide positive int")
             return
@@ -480,10 +713,30 @@ class MefWriter:
 
     @property
     def data_units(self):
+        """
+        Getter for the units of the data.
+
+        Returns
+        -------
+        str
+            The units of the data.
+        """
         return self._data_units
 
     @data_units.setter
     def data_units(self, units_str):
+        """
+        Setter for the units of the data.
+
+        Parameters
+        ----------
+        units_str : str
+            The units for the data.
+
+        Returns
+        -------
+        None
+        """
         if (len(units_str) < 0) | (not (isinstance(units_str, str))):
             print("incorrect value, please provide str with less than 20 chars")
             return
@@ -492,18 +745,54 @@ class MefWriter:
 
     @property
     def record_offset(self):
+        """
+        Getter for the offset of the record.
+
+        Returns
+        -------
+        int
+            The offset of the record.
+        """
+
         return self._record_offset
 
     @record_offset.setter
     def record_offset(self, new_offset):
+        """
+        Setter for the offset of the record.
+
+        Parameters
+        ----------
+        new_offset : int
+            The new offset for the record.
+
+        Returns
+        -------
+        None
+        """
         self._record_offset = new_offset
 
     @property
     def mef_block_len(self):
+        """
+        Getter for the MEF block length. Higher the mef_block length, better the compression, but higher the memory usage.
+
+        Returns
+        -------
+        int
+            The MEF block length.
+        """
         return self._mef_block_len
 
     @mef_block_len.setter
     def mef_block_len(self, new_mefblock_len):
+        """
+        Getter for the MEF block length. Higher the mef_block length, better the compression, but higher the memory usage.
+
+        Returns
+        -------
+        None
+        """
         self._mef_block_len = new_mefblock_len
 
 # Functions
@@ -535,6 +824,30 @@ def voss(nrows, ncols=32):
 
 
 def create_pink_noise(fs, seg_len, low_bound, up_bound):
+    """
+    Creates a pink noise signal.
+
+    Parameters
+    ----------
+    fs : int
+        Sampling frequency of the signal.
+    seg_len : int
+        Length of the segment for which pink noise is to be generated.
+    low_bound : float
+        Lower bound for the amplitude of the generated noise.
+    up_bound : float
+        Upper bound for the amplitude of the generated noise.
+
+    Returns
+    -------
+    numpy.ndarray
+        The generated pink noise signal.
+
+    Raises
+    ------
+    ValueError
+        If the requested segment length results in too many samples.
+    """
     n = int(fs * seg_len)
     if n > 20 * 1e6:
         raise ValueError('too many samples to generate')
@@ -545,6 +858,28 @@ def create_pink_noise(fs, seg_len, low_bound, up_bound):
 
 
 def scale_signal(data, a, b):
+    """
+    Scales a signal to a specified range.
+
+    Parameters
+    ----------
+    data : numpy.ndarray
+        The input signal to scale.
+    a : float
+        The lower bound of the desired range.
+    b : float
+        The upper bound of the desired range.
+
+    Returns
+    -------
+    numpy.ndarray
+        The input signal, rescaled to the range [a, b].
+
+    Notes
+    -----
+    This function performs a linear transformation of the input data such that
+    the minimum value becomes `a` and the maximum value becomes `b`.
+    """
     min_x = np.min(data)
     data_range = np.max(data) - min_x
     temp_arr = (data - min_x) / data_range
@@ -553,6 +888,30 @@ def scale_signal(data, a, b):
 
 
 def check_int32_dynamic_range(x_min, x_max, alpha):
+    """
+        Checks whether the scaled range of the input values falls within the dynamic range of int32.
+
+        Parameters
+        ----------
+        x_min : float or int
+            The minimum value of the input.
+        x_max : float or int
+            The maximum value of the input.
+        alpha : float or int
+            The scaling factor applied to the input range.
+
+        Returns
+        -------
+        bool
+            Returns True if the scaled range falls within the dynamic range of int32. Otherwise, returns False.
+
+        Notes
+        -----
+        This function checks whether the input range, when scaled by a factor of alpha,
+        falls within the dynamic range of the int32 datatype. If the scaled range exceeds
+        the dynamic range of int32, the function returns False. If the scaled range falls
+        within the dynamic range of int32, the function returns True.
+    """
     min_value = np.iinfo(np.int32).min
     if (x_min * alpha < min_value) & (x_max * alpha > np.iinfo(np.int32).max):
         return False
@@ -561,6 +920,32 @@ def check_int32_dynamic_range(x_min, x_max, alpha):
 
 
 def infer_conversion_factor(data):
+    """
+    Infers the optimal conversion factor to scale the input data.
+
+    Parameters
+    ----------
+    data : array-like
+        The input data.
+
+    Returns
+    -------
+    precision : int
+        The optimal conversion factor for scaling the input data.
+
+    Notes
+    -----
+    This function infers the optimal conversion factor for scaling the input data
+    to bring it within the dynamic range of int32. It initially calculates the mean
+    of the absolute differences of the data and scales it up until the mean reaches
+    a threshold value. Then it checks if the range of the scaled data falls within
+    the dynamic range of int32, and if not, it reduces the scaling factor until the
+    scaled data is within the dynamic range of int32.
+
+    If the input data has high dynamic range, this function might decrease the scaling
+    factor to avoid saturation. In this case, a warning message will be printed indicating
+    the decreased precision.
+    """
     mean_digg_abs = np.nanmean(np.abs(np.diff(data)))
     precision = 0
     # this works for small z-scored data, for high dynamic range input needs to be decreased again (saturation)
@@ -579,6 +964,34 @@ def infer_conversion_factor(data):
 
 
 def convert_data_to_int32(data, precision=None):
+    """
+        Converts the input data to int32 type, optionally scaling it by a specified factor.
+
+        Parameters
+        ----------
+        data : array-like
+            The input data.
+        precision : int, optional
+            The scaling factor (expressed as a power of 10) to apply to the data. If not provided,
+            it will be inferred using the `infer_conversion_factor` function.
+
+        Returns
+        -------
+        data_int32 : ndarray
+            The input data converted to int32 type and scaled by the specified factor.
+
+        Notes
+        -----
+        This function converts the input data to int32 type. If a scaling factor (precision) is
+        provided, it is used to scale the data before conversion. If no scaling factor is
+        provided, the function infers an optimal factor using the `infer_conversion_factor` function.
+
+        The data is first rounded to the specified number of decimal places, then multiplied by
+        10 to the power of the precision factor, and finally cast to int32 type.
+
+        If the specified precision is less than 0 or not an integer, a warning is printed and
+        the precision is set to 0, meaning no scaling is applied.
+    """
     if precision is None:
         print(f"Info: convert data to int32:  precision is not given, inferring...")
         precision = infer_conversion_factor(data)
@@ -595,6 +1008,42 @@ def convert_data_to_int32(data, precision=None):
 
 
 def find_intervals_binary_vector(input_bin_vector, fs, start_uutc, samples_of_nans_allowed=None):
+    """
+        Detects continuous intervals of ones in a binary vector and returns their start and stop times.
+
+        Parameters
+        ----------
+        input_bin_vector : array-like
+            The input binary vector.
+        fs : int
+            The sampling frequency of the data.
+        start_uutc : int
+            The start time of the data in microseconds since Unix Epoch.
+        samples_of_nans_allowed : int, optional
+            The maximum number of consecutive zeros (NaNs) that are considered part of an interval.
+            If not provided, it defaults to the sampling frequency.
+
+        Returns
+        -------
+        connected_detected_intervals : DataFrame
+            A DataFrame containing the start and stop times (in samples and microseconds) of the
+            continuous intervals of ones in the input binary vector.
+
+        Notes
+        -----
+        This function processes a binary vector and detects continuous intervals of ones. It
+        considers an interval to continue over a stretch of zeros (NaNs) if their number does not
+        exceed a specified limit (samples_of_nans_allowed).
+
+        The function returns a DataFrame containing the start and stop times of each detected
+        interval, both in number of samples and in microseconds since Unix Epoch.
+
+        The function first extends the input vector with a zero at both ends, then calculates the
+        difference between consecutive elements. The positions where this difference equals 1
+        correspond to the starts of intervals of ones, while the positions where it equals -1
+        correspond to their ends. The function then merges intervals that are closer to each other
+        than samples_of_nans_allowed and calculates the corresponding start and stop times.
+        """
     if samples_of_nans_allowed is None:
         samples_of_nans_allowed = int(fs)
 
@@ -633,7 +1082,10 @@ def find_intervals_binary_vector(input_bin_vector, fs, start_uutc, samples_of_na
     connected_detected_intervals = pd.DataFrame(columns=['start_samples', 'stop_samples', ])
     connected_detected_intervals['start_samples'] = overlap_starts.astype(int64)
     connected_detected_intervals['stop_samples'] = overlap_ends.astype(int64)
-    connected_detected_intervals = connected_detected_intervals.append(lonely_segments, ignore_index=True)
+
+    # connected_detected_intervals = connected_detected_intervals.append(lonely_segments, ignore_index=True)
+    connected_detected_intervals = pd.concat([connected_detected_intervals, lonely_segments], ignore_index=True)
+
     connected_detected_intervals = connected_detected_intervals.sort_values(by='start_samples').reset_index(drop=True)
 
     # calculate uutc time of intervals
@@ -643,7 +1095,30 @@ def find_intervals_binary_vector(input_bin_vector, fs, start_uutc, samples_of_na
 
 
 def check_data_integrity(original_data, converted_data, precision):
+    """
+        Check the integrity of the original data against the converted data.
 
+        Parameters
+        ----------
+        original_data : array-like
+            The original data before conversion.
+        converted_data : array-like
+            The data after conversion.
+        precision : int
+            The precision used during the conversion process.
+
+        Returns
+        -------
+        result_bin : bool
+            True if all close, else False.
+
+        Notes
+        -----
+        This function checks the integrity of the original data against the converted data.
+        It converts the converted data back to the original scale, excludes NaNs, and checks
+        if the original and reconverted data are close to each other within a specified tolerance.
+        The check is performed using numpy's allclose function with a tolerance of 0.1^(precision-1).
+    """
     coverted_float = 0.1**precision*(converted_data)
     idx_numbers = ~np.isnan(original_data)
     result_bin = np.allclose(coverted_float[idx_numbers], original_data[idx_numbers], atol=0.1**(precision-1))

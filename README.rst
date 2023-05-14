@@ -12,166 +12,182 @@
 
 
 
-
 MEF_Tools
 ----------------
 
 This package provides tools for easier `Multiscale Electrophysiology Format (MEF) <https://doi.org/10.1016%2Fj.jneumeth.2009.03.022>`_ data saving and reading. See the example below and `documentation <https://mef-tools.readthedocs.io/en/latest/?badge=latest>`_.
 
-`Multiscale Electrophysiology Format (MEF) <https://doi.org/10.1016%2Fj.jneumeth.2009.03.022>`_ is a data file format designed for storing electro-physiological signals. MEF was developed to handle the large amounts of data produced by large-scale electro-physiology in human and animal subjects. See original `GitHub repository <https://github.com/msel-source/meflib>`_.
 
-`pymef <https://github.com/msel-source/meflib>`_ is a Python wrapper for meflib. See `documentation <https://pymef.readthedocs.io/en/latest/>`_.
+Multiscale Electrophysiology Format (MEF)
+-------------------------------------------
+
+`Multiscale Electrophysiology Format (MEF) <https://doi.org/10.1016%2Fj.jneumeth.2009.03.022>`_ is a specialized file format designed for storing electrophysiological data. This format is capable of storing multiple channels of data in a single file, with each channel storing a time series of data points.
+
+MEF is particularly useful for handling large volumes of electrophysiological data, as it employs a variety of techniques such as lossless and lossy compression, data encryption and data de-identification to make the storage and transmission of such data more efficient and secure.
+
+Python's pymef library provides a set of tools for working with MEF files, including reading from and writing to these files. Below are examples demonstrating the use of these tools.
+
+Dependencies
+----------------
+- `meflib <https://github.com/msel-source/meflib>`_ - binaries are included in the pymef package
+- `pymef <https://github.com/msel-source/pymef>`_
+- `numpy <https://numpy.org/>`_
+- `pandas <https://pandas.pydata.org/>`_
 
 
---------------------------------------------------------------------------------------------------
+Installation
+----------------
 
-Source
+See installation instructions `INSTALL.rst <https://github.com/xmival00/MEF_Tools/blob/master/INSTALL.rst>`_.
+
+License
+----------------
+
+This software is licensed under the Apache-2.0 License. See `LICENSE <https://github.com/xmival00/MEF_Tools/blob/master/LICENSE>`_ file in the root directory of this project.
+
+
+Reference
 ----------------
 
 * Brinkmann BH, Bower MR, Stengel KA, Worrell GA, Stead M. Large-scale electrophysiology: acquisition, compression, encryption, and storage of big data. J Neurosci Methods. 2009;180(1):185‐192. doi:10.1016/j.jneumeth.2009.03.022
 
-* `Repository <https://github.com/msel-source/meflib>`_
 
---------------------------------------------------------------------------------------------------
-
-
-Example
+Examples
 ----------------
 
+First, we need to import the necessary libraries:
 
 .. code-block:: python
 
-    # Requirements
-    # Python 3.6
-    # pymef - pip install pymef
-    # numpy - if anaconda conda install -c anaconda numpy; else pip install numpy
-    # pandas - same as numpy
-
-    # imports
-    import numpy as np
-    from mef_tools.io import MefWriter, MefReader, create_pink_noise
     import os
+    import time
+    import numpy as np
     import pandas as pd
+    from mef_tools.io import MefWriter, MefReader, create_pink_noise
 
-    # path to data
+Next, we define the path to our MEF file, and the amount of data (in seconds) we want to write:
+
+.. code-block:: python
+
     session_name = 'session'
     session_path = os.getcwd() + f'/{session_name}.mefd'
     mef_session_path = session_path
-
-    # define how much is written
     secs_to_write = 30
 
-    # define start of data uutc in uUTC time
-    start_time = 1578715810000000
-    # define end of data in uUTC time (optional) if None it is inferred from start_time and number samples + fs
+We also need to specify the start and end times of our data in uUTC time. uUTC time is the number of microseconds since January 1, 1970, 00:00:00 UTC. We can use the `time <https://docs.python.org/3/library/time.html>`_ library to convert between UTC time and other time formats. In this example, we will use the current time as the start time, and the start time plus the number of seconds we want to write as the end time:
+
+.. code-block:: python
+
+    start_time = int(time.time() * 1e6)
     end_time = int(start_time + 1e6*secs_to_write)
 
-    # passwords
-    pass1 = 'pass1'
-    pass2 = 'pass2'
 
-    # overwrite flag - delete all session with the same path
-    writer = MefWriter(session_path, overwrite=True, password1=pass1, password2=pass2)
+With our file path and timing details set, we can now create our MEFWriter instance:
 
-    # property max nans in continuous block set (default is equal to fs)
-    writer.max_nans_written = 0
-    # property units of data - default uV
-    writer.data_units = 'mV'
+.. code-block:: python
+    pass1 = 'pass1' # password needed for writing to file
+    pass2 = 'pass2' # password needed for every read/write operation
+    Wrt = MefWriter(session_path, overwrite=True, password1=pass1, password2=pass2)
+    Wrt.max_nans_written = 0
+    Wrt.data_units = 'mV'
 
-    # create test data with fs 500 Hz and dynamic range <-10; 10>
+We then create some test data to write to our file:
+
+.. code-block:: python
+
     fs = 500
     low_b = -10
     up_b = 10
-
     data_to_write = create_pink_noise(fs, secs_to_write, low_b, up_b)
 
-    # channel name
+This data is written to a channel in our MEF file:
+
+.. code-block:: python
     channel = 'channel_1'
-
-    # precision - how many floating points will be scaled up to int. e.g. sample with float = 0.001 with precision 3 -> will be stored as int
-    # = 1 and scaling factor will be 0.001. This will be automatically set if not specified and no data exist with the same channel name)
     precision = 3
-    writer.write_data(data_to_write, channel, start_time, fs, precision=precision)
+    Wrt.write_data(data_to_write, channel, start_time, fs, precision=precision)
 
-    # append new data - precision is now fixed by the first data written
+Appending Data to an Existing MEF File
+________________________________________
+
+To append data to an existing MEF file, we first need to create a new writer:
+
+.. code-block:: python
+
     secs_to_append = 5
     discont_length = 3
     append_time = end_time + int(discont_length*1e6)
-    append_end = int(append_time + 1e6*secs_to_append)
+    append_end = append_time + 1e6*secs_to_append
     data = create_pink_noise(fs, secs_to_append, low_b, up_b)
-    del writer
+    Wrt2 = MefWriter(session_path, overwrite=False, password1=pass1, password2=pass2)
+    Wrt2.write_data(data, channel, append_time, fs)
 
-    # create a new writer and append to previous data
-    writer2 = MefWriter(session_path, overwrite=False, password1=pass1, password2=pass2)
-    # new data are appended to the previous data
-    writer2.write_data(data, channel, append_time, fs)
+Creating a New Segment in the MEF File
+________________________________________
 
-    # new segment - same call just flag is changed
+To create a new segment, we simply need to change the new_segment flag to True:
+
+.. code-block:: python
+
     secs_to_write_seg2 = 10
     gap_time = 3.36*1e6
     newseg_time = append_end + int(gap_time)
-    newseg_end = int(newseg_time + 1e6*secs_to_write_seg2)
+    newseg_end = newseg_time + 1e6*secs_to_write_seg2
     data = create_pink_noise(fs, secs_to_write_seg2, low_b, up_b)
     data[30:540] = np.nan
     data[660:780] = np.nan
-    writer2.write_data(data, channel, newseg_time, fs, new_segment=True, )
+    Writer2.write_data(data, channel, newseg_time, fs, new_segment=True)
 
-    # inferred precision
+We can also write data to a new channel with inferred precision:
+
+.. code-block:: python
+
     channel = 'channel_2'
-    writer2.write_data(data, channel, newseg_time, fs, new_segment=True, )
+    Wrt2.write_data(data, channel, newseg_time, fs, new_segment=True)
 
-    # ----------- write annotations ---------
-    # define start of data uutc in uUTC time
-    start_time = 1578715810000000 - 1000000
-    # define end of data in uUTC time
-    end_time = int(start_time + 1e6 * 300)
-    # offset time - if not data written
-    offset = int(start_time - 1e6)
-    # create note annotation ( no duration)
+
+Writing Annotations to the MEF File
+-------------------------------------
+
+Annotations can also be added to the MEF file at both the session and channel levels. Here's an example of how to do this:
+
+.. code-block:: python
+
+    start_time = start_time
+    end_time = start_time + 1e6 * 300
+    offset = start_time - 1e6
     starts = np.arange(start_time, end_time, 2e6)
     text = ['test'] * len(starts)
     types = ['Note'] * len(starts)
     note_annotations = pd.DataFrame(data={'time': starts, 'text': text, 'type': types})
-    # write annotations to session level
-    writer2.write_annotations(note_annotations,)
+    Wrt2.write_annotations(note_annotations)
 
-    # create annotation with duration and store them to a channel
     starts = np.arange(start_time, end_time, 1e5)
     text = ['test'] * len(starts)
     types = ['EDFA'] * len(starts)
     duration = [10025462] * len(starts)
     note_annotations = pd.DataFrame(data={'time': starts, 'text': text, 'type': types, 'duration':duration})
-    # write annotations to the channel level
-    writer2.write_annotations(note_annotations, channel=channel )
+    Wrt2.write_annotations(note_annotations, channel=channel )
 
-    # -------- reader example -----------
-    
-    pass2 = 'pass2'
-    Reader = MefReader(mef_session_path, password2=pass2)
+
+Reading from an MEF File
+__________________________
+
+In this example, we create a MefReader instance, print out the properties of the MEF file, and then read the first 10 seconds of data from each channel. The data from each channel is appended to a list.
+
+.. code-block:: python
+    Reader = MefReader(session_path, password2=pass2)
     signals = []
-    
+
     properties = Reader.properties
     print(properties)
- 
+
     for channel in Reader.channels:
-        # x = Reader.get_data(channel) # reads all the data in the given channel
-        start_time = Reader.get_property('start_time', channel) # timestamp in micro seconds
+        start_time = Reader.get_property('start_time', channel)
         end_time = Reader.get_property('end_time', channel)
-        x = Reader.get_data(channel, start_time, start_time+10*1e6) # reads the first 10 seconds of the signal
+        x = Reader.get_data(channel, start_time, start_time+10*1e6)
         signals.append(x)
-    
 
--------------------------------------------------------------------------------------------------------------
 
-Installation
-----------------
 
-See installation instructions `INSTALL.md <https://github.com/xmival00/MEF_Tools/blob/master/INSTALL.md>`_.
-
-------------------------------------------------------------------------------------------------------------
-
-License
-----------------
-
-This software is licensed under the Apache-2.0 License. See `LICENSE <https://github.com/xmival00/MEF_Tools/blob/master/LICENSE>`_ file in the root directory of this project. 
 

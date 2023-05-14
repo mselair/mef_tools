@@ -234,7 +234,9 @@ class TestMefWriter(TestCase):
         annot_list = self.mef_writer._read_annotation_record(channel=channel)
         read_annotations = pd.DataFrame(annot_list)
         read_annotations = read_annotations[cols]
-        total_annots = new_annotations.append(note_annotations, ignore_index=True)
+
+        # total_annots = new_annotations.append(note_annotations, ignore_index=True)
+        total_annots = pd.concat([note_annotations, new_annotations], ignore_index=True)
 
         pd.testing.assert_frame_equal(read_annotations, total_annots)
 

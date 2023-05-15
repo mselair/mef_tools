@@ -55,6 +55,8 @@ Reference
 Examples
 ----------------
 
+See more `examples <https://github.com/mselair/mef_tools/tree/master/examples>`_.
+
 First, we need to import the necessary libraries:
 
 .. code-block:: python
@@ -147,7 +149,7 @@ We can also write data to a new channel with inferred precision:
 
 
 Writing Annotations to the MEF File
--------------------------------------
+________________________________________
 
 Annotations can also be added to the MEF file at both the session and channel levels. Here's an example of how to do this:
 
@@ -170,8 +172,9 @@ Annotations can also be added to the MEF file at both the session and channel le
     Wrt2.write_annotations(note_annotations, channel=channel )
 
 
-Reading from an MEF File
-__________________________
+Reading from MEF File
+________________________________________
+
 
 In this example, we create a MefReader instance, print out the properties of the MEF file, and then read the first 10 seconds of data from each channel. The data from each channel is appended to a list.
 

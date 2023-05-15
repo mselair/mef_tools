@@ -6,13 +6,15 @@
 
 import os
 import time
-import numpy as np
 from shutil import rmtree
+from copy import deepcopy, copy
+
+import pandas as pd
+import numpy as np
+from numpy import int64
+
 from pymef import mef_session
 from pymef.mef_session import MefSession
-import pandas as pd
-from copy import deepcopy, copy
-from numpy import int64
 
 
 class MefReader:

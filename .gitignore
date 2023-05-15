@@ -1,11 +1,4 @@
 
 .DS_Store
-/main.py
-/examples/
-/examples/__init__.py
-/examples/csv2mef.py
-/examples/edf2mef.py
-/examples/joinmat_to_mef.py
-/examples/mat_to_mef.py
 /.idea/
 *.pyc

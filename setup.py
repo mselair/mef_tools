@@ -33,34 +33,31 @@ setuptools.setup(
     author_email="mivalt.filip@mayo.edu",
 
 
-    description="Tools for handling Multiscale Eleptrophysiology Format (MEF3) using pymef library.",
-    long_description="MefWriter and MefReader are high-level API tools containing all headers required for convenient MEF3 file writing and reading.",
+    description="Tools for easy and efficient handling of Multiscale Eleptrophysiology Format (MEF3).",
+    long_description="MefWriter and MefReader are a high-level API tools containing all headers required for convenient MEF3 file writing and reading including support for MEF3 annotations.",
     long_description_content_type="",
 
     packages=setuptools.find_packages(),
 
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         'Intended Audience :: Healthcare Industry',
         'Intended Audience :: Science/Research',
         "License :: OSI Approved :: Apache Software License",
+        "Natural Language :: English",
+        "Operating System :: OS Independent",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
-        "Operating System :: OS Independent",
         'Topic :: Scientific/Engineering :: Medical Science Apps.'
     ],
     python_requires='>=3.6',
     install_requires =[
         'numpy',
         'pandas',
-        'scipy',
-        'tqdm',
-        'sshtunnel',
-        'pymef',
-        'python-dateutil'
+        'pymef'
     ]
 )
 

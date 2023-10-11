@@ -192,6 +192,9 @@ class MefReader:
         if isinstance(t_stamp2, type(None)):
             t_stamp2 = min([self.get_property('end_time', channel) for channel in self.channels if channel in channels_to_pick])
 
+        t_stamp1 = int(t_stamp1)
+        t_stamp2 = int(t_stamp2)
+
         return self.session.read_ts_channels_uutc(channels_to_pick, [t_stamp1, t_stamp2])
 
     def get_data(self, channels, t_stamp1=None, t_stamp2=None):
@@ -213,6 +216,9 @@ class MefReader:
             Array of processed data.
 
         """
+
+        t_stamp1 = int(t_stamp1)
+        t_stamp2 = int(t_stamp2)
         data = self.get_raw_data(channels, t_stamp1, t_stamp2)
         if isinstance(channels, list):
             for idx, ch_name in enumerate(channels):
@@ -390,6 +396,9 @@ class MefWriter:
             print(f"WARNING: incorrect End uutc time {end_uutc} is before beginning: {start_uutc}")
             return None
 
+        start_uutc = int(start_uutc)
+        end_uutc = int(end_uutc)
+
         # check if any data exists -> apend or create new segment
         if channel in self.channel_info.keys():
             # check if it is possible to write with configuration provided
@@ -488,8 +497,8 @@ class MefWriter:
             if not np.issubdtype(annotations['duration'].dtype, np.int64):
                 annotations['duration'] = annotations['duration'].astype(np.int64)
 
-        start_time = annotations['time'].min()
-        end_time = annotations['time'].max()
+        start_time = int(annotations['time'].min())
+        end_time = int(annotations['time'].max())
         record_list = annotations.to_dict('records')
 
         # read old annotations
@@ -529,6 +538,8 @@ class MefWriter:
         -------
         None
         """
+        start_time = int(start_time)
+        end_time = int(end_time)
         record_offset = self.record_offset
         if channel is None:
             self.session.write_mef_records(self.pwd1, self.pwd2,  start_time,
@@ -587,6 +598,9 @@ class MefWriter:
         -------
         None
         """
+        start_uutc = int(start_uutc)
+        end_uutc = int(end_uutc)
+
         if data.dtype != np.int32:
             raise AssertionError('[TYPE ERROR] - MEF file writer accepts only int32 signal datatype!')
 
@@ -651,6 +665,9 @@ class MefWriter:
         if self.verbose:
             print(f"INFO: appending new data for channel: {channel}, segment: {segment}, ufac:"
                   f" {self.channel_info[channel]['ufact'][0]}, start: {start_uutc}, stop {end_uutc} ")
+
+        start_uutc = int(start_uutc)
+        end_uutc = int(end_uutc)
 
         self.session.append_mef_ts_segment_data(channel,
                                                   int64(segment),

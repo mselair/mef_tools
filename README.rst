@@ -27,6 +27,8 @@ MEF is particularly useful for handling large volumes of electrophysiological da
 
 Python's pymef library provides a set of tools for working with MEF files, including reading from and writing to these files. Below are examples demonstrating the use of these tools.
 
+* BH Brinkmann et al., “Large-scale electrophysiology: acquisition, compression, encryption, and storage of big data,“ J. Neurosci Methods. 2009;180(1):185‐192. doi:10.1016/j.jneumeth.2009.03.022
+
 Dependencies
 ----------------
 - `meflib <https://github.com/msel-source/meflib>`_ - binaries are included in the pymef package
@@ -46,10 +48,13 @@ License
 This software is licensed under the Apache-2.0 License. See `LICENSE <https://github.com/xmival00/MEF_Tools/blob/master/LICENSE>`_ file in the root directory of this project.
 
 
-Reference
+Cite
 ----------------
+This toolbox was developed as a part of the following projects. When use whole, parts, or are inspired by, we appreciate you acknowledge and refer these journal papers:
 
-* Brinkmann BH, Bower MR, Stengel KA, Worrell GA, Stead M. Large-scale electrophysiology: acquisition, compression, encryption, and storage of big data. J Neurosci Methods. 2009;180(1):185‐192. doi:10.1016/j.jneumeth.2009.03.022
+* V. Sladky et al., “Distributed brain co-processor for tracking spikes, seizures and behaviour during electrical brain stimulation,” Brain Commun., vol. 4, no. 3, May 2022, doi: 10.1093/braincomms/fcac115.
+
+* F. Mivalt et al., “Electrical brain stimulation and continuous behavioral state tracking in ambulatory humans,” J. Neural Eng., vol. 19, no. 1, p. 016019, Feb. 2022, doi: 10.1088/1741-2552/ac4bfd.
 
 
 Examples

@@ -41,7 +41,7 @@ else:
 project = 'MEF Tools'
 author = 'Filip Mivalt'
 copyright = '2020, Bioelectronics Neurophysiology and Engineering Lab - Mayo Clinic. \n'
-
+html_build_dir = '_readthedocs'
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.

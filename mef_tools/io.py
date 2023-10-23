@@ -216,9 +216,10 @@ class MefReader:
             Array of processed data.
 
         """
-
-        t_stamp1 = int(t_stamp1)
-        t_stamp2 = int(t_stamp2)
+        if not isinstance(t_stamp1, type(None)):
+            t_stamp1 = int(t_stamp1)
+        if not isinstance(t_stamp2, type(None)):
+            t_stamp2 = int(t_stamp2)
         data = self.get_raw_data(channels, t_stamp1, t_stamp2)
         if isinstance(channels, list):
             for idx, ch_name in enumerate(channels):

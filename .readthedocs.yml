@@ -26,5 +26,3 @@ build:
     - pip install sphinx==3.0.3
 sphinx:
   configuration: docs/source/conf.py
-  builder: html
-  fail_on_warning: false

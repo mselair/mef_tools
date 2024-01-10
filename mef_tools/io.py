@@ -837,7 +837,8 @@ def voss(nrows, ncols=32):
     array[rows, cols] = np.random.random(n)
 
     df = pd.DataFrame(array)
-    df.fillna(method='ffill', axis=0, inplace=True)
+    # df.fillna(method='ffill', axis=0, inplace=True)
+    df.ffill(axis=0, inplace=True)
     total = df.sum(axis=1)
 
     return total.values
@@ -1021,6 +1022,12 @@ def convert_data_to_int32(data, precision=None):
         print(f"WARNING: precision set to incorrect value, it is set to default (0) = conversion without scaling (scaling=1)")
         precision = 0
 
+
+    # Version 1.2.1 -> 1.2.2 removing nans from the scaled signal.
+    # Segments for dealing with nans have been created already in the past.
+    # The data cast to int32 warning for nan values.
+    # Tests intact
+    data[np.isnan(data)] = 0
     deciround = np.round(data, decimals=precision)
     data_int32 = np.empty(shape=deciround.shape, dtype=np.int32)
     data_int32[:] = 10 ** precision * (deciround)

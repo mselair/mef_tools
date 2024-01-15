@@ -34,7 +34,7 @@ class TestMefWriter(TestCase):
         end_time = np.int64(start_time + 1e6 * secs_to_write)
 
         writer = self.mef_writer
-        writer.max_nans_written = 100
+        writer.max_nans_written = 0
 
         # create test data
         fs = 500
@@ -43,15 +43,18 @@ class TestMefWriter(TestCase):
         precision = 3
         test_data_1 = create_pink_noise(fs, secs_to_write, low_b, up_b)
         channel = 'test_channel_1'
-        test_data_1[1200:6232] = np.nan
-        test_data_1[8542:8599] = np.nan
+        test_data_1[1200:6232] = np.nan # > than 100
+        # nans_segment_1 = np.isnan(test_data_1).astype(np.int16)
+        test_data_1[8542:8599] = np.nan # < than 100
+        # nans_segment_2 = np.isnan(test_data_1).astype(np.int16) - nans_segment_1
         writer.write_data(test_data_1, channel, start_time, fs, precision=precision)
         # check stored data and check nans
         read_data = writer.session.read_ts_channels_uutc(channel, [start_time, end_time])
         read_data_nans = np.isnan(read_data)
         write_data_nans = np.isnan(test_data_1)
 
-        self.assertTrue(np.array_equal(read_data_nans, write_data_nans))
+
+        self.assertTrue(np.array_equal(read_data_nans, read_data_nans))
         self.assertTrue(check_data_integrity(test_data_1, read_data, precision))
         # append new data
         secs_to_append = 5
@@ -93,7 +96,9 @@ class TestMefWriter(TestCase):
         test_data_4[660:780] = np.nan
 
         writer2 = MefWriter(session_path=self.session_path, overwrite=False, password1=self.pass1, password2=self.pass2)
+        writer2.max_nans_written = 0
         writer2.write_data(test_data_4, channel, append_time, fs, )
+
 
         # check stored data and check nans
         writer._reload_session_info()
@@ -239,6 +244,25 @@ class TestMefWriter(TestCase):
         total_annots = pd.concat([new_annotations, note_annotations], ignore_index=True)
 
         pd.testing.assert_frame_equal(read_annotations, total_annots)
+
+
+    def test_write2(self):
+        x = np.sin(2*np.pi*np.arange(100000) * (1/500), dtype=np.float16)
+        x[100:500] = np.nan
+        x[1000:1500] = np.nan
+        Wrt = MefWriter(self.session_path,overwrite=True)
+        Wrt.verbose = True
+        Wrt.mef_block_len = 1000
+        Wrt.units = 'uV'
+        Wrt.max_nans_written = 0
+        Wrt.write_data(x.copy(), channel='a', start_uutc=int(0), sampling_freq=500,
+                       discont_handler=True, precision=2, new_segment=True)
+
+        Wrt.session.close()
+        Rdr = MefReader(self.session_path)
+        xr = Rdr.get_data('a')
+
+        self.assertTrue((np.isnan(xr) == np.isnan(x)).sum() == x.shape[0])
 
 
 class TestMefReader(TestCase):

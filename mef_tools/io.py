@@ -433,7 +433,7 @@ class MefWriter:
             self.channel_info[channel] = {'mef_block_len': self.get_mefblock_len(sampling_freq), 'ufact': [ufact]}
             data_converted = convert_data_to_int32(data_write, precision=precision)
 
-        # discont handler writes fragmented intervals ( skip nans greater than specified)
+        # discont handler writes fragmented intervals (skip nans greater than specified)
         if discont_handler:
             if self.max_nans_written == 'fs':
                 max_nans = int(sampling_freq)
@@ -1027,6 +1027,7 @@ def convert_data_to_int32(data, precision=None):
     # Segments for dealing with nans have been created already in the past.
     # The data cast to int32 warning for nan values.
     # Tests intact
+    data = data.copy()
     data[np.isnan(data)] = 0
     deciround = np.round(data, decimals=precision)
     data_int32 = np.empty(shape=deciround.shape, dtype=np.int32)

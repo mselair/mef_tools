@@ -6,7 +6,7 @@
 
 
 from .io import MefWriter, MefReader
-__version__ = '1.2.2'
+__version__ = '1.2.3'
 
 import os
 DELIMITER = os.path.sep

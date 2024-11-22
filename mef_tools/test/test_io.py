@@ -5,6 +5,7 @@ from mef_tools.io import MefWriter, MefReader, create_pink_noise, check_data_int
 import os
 import numpy as np
 import pandas as pd
+import tempfile
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -23,7 +24,7 @@ class TestMefWriter(TestCase):
         rmtree(self.session_path)
 
     def test_write_data(self):
-        # multiple write test called
+        # multiple write tests called
         # define how much is written
         secs_to_write = 30
         secs_to_seg2 = 5
@@ -36,7 +37,7 @@ class TestMefWriter(TestCase):
         writer = self.mef_writer
         writer.max_nans_written = 100
 
-        # create test data
+        # create tests data
         fs = 500
         low_b = -10
         up_b = 10
@@ -103,7 +104,7 @@ class TestMefWriter(TestCase):
         self.assertTrue(np.array_equal(read_data_nans, write_data_nans))
         self.assertTrue(check_data_integrity(test_data_4, read_data, precision))
 
-        # test all data channel 1
+        # tests all data channel 1
         write_data_all = np.concatenate((test_data_1, test_data_2, test_data_3, test_data_4))
 
         write_data_nans = np.isnan(write_data_all)
@@ -121,7 +122,7 @@ class TestMefWriter(TestCase):
         writer = self.mef_writer
         writer.max_nans_written = 100
 
-        # create test data with low fs
+        # create tests data with low fs
         fs = 31
         low_b = -1
         up_b = 1
@@ -155,7 +156,7 @@ class TestMefWriter(TestCase):
         writer.max_nans_written = 0
         writer.mef_block_len = 100
 
-        # create test data
+        # create tests data
         fs = 0.1
         low_b = -10
         up_b = 10
@@ -182,7 +183,7 @@ class TestMefWriter(TestCase):
         offset = 0#int(start_time - 1e6)
         # create note annotation ( no duration)
         starts = np.arange(start_time, end_time, 2e6)
-        text = ['test'] * len(starts)
+        text = ['tests'] * len(starts)
         types = ['Note'] * len(starts)
         note_annotations = pd.DataFrame(data={'time': starts, 'text': text, 'type': types})
         cols = ['time', 'text', 'type']
@@ -200,7 +201,7 @@ class TestMefWriter(TestCase):
         start_time = end_time
         end_time = int(start_time + 1e6 * secs_to_write)
 
-        # create test data
+        # create tests data
         fs = 500
         low_b = -10
         up_b = 10
@@ -211,7 +212,7 @@ class TestMefWriter(TestCase):
 
         # create annotation with duration
         starts = np.arange(start_time, end_time, 1e5)
-        text = ['test'] * len(starts)
+        text = ['tests'] * len(starts)
         types = ['EDFA'] * len(starts)
         duration = [10025462] * len(starts)
         note_annotations = pd.DataFrame(data={'time': starts, 'text': text, 'type': types, 'duration':duration})
@@ -255,7 +256,7 @@ class TestMefReader(TestCase):
         rmtree(self.session_path)
 
     def test_read_data(self):
-        # multiple write test called
+        # multiple write tests called
         # define how much is written
         secs_to_write = 30
         secs_to_seg2 = 5
@@ -268,7 +269,7 @@ class TestMefReader(TestCase):
         writer = self.mef_writer
         writer.max_nans_written = 100
 
-        # create test data
+        # create tests data
         fs = 500
         low_b = -10
         up_b = 10
@@ -295,7 +296,29 @@ class TestMefReader(TestCase):
 
         self.assertTrue(check_data_integrity(test_data_1, read_data_no_time, 0))
 
+class TestEndtoEnd(TestCase):
+    def setUp(self):
+        self.tmp_dir = os.path.join(tempfile.mkdtemp(), 'mef_tools')
+        if not os.path.exists(self.tmp_dir):
+            os.mkdir(self.tmp_dir)
 
+        self.path_session_1 = os.path.join(self.tmp_dir, 'session_endtoend_01')
+        self.path_session_2 = os.path.join(self.tmp_dir, 'session_endtoend_02')
+        self.path_session_3 = os.path.join(self.tmp_dir, 'session_endtoend_03')
+        self.path_session_4 = os.path.join(self.tmp_dir, 'session_endtoend_04')
+        self.path_session_5 = os.path.join(self.tmp_dir, 'session_endtoend_05')
+
+    def tearDown(self):
+        rmtree(self.tmp_dir)
+
+
+    def test_long_sequenc_with_offset(self):
+        fs = 2000
+        duration = 3600 * 18
+
+        x = np.random.randn(duration * fs) + 2000
+
+        print(x.std())
 
 
 if __name__ == '__main__':

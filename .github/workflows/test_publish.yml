@@ -78,7 +78,7 @@ jobs:
 
   release:
     if: contains(github.ref, 'refs/tags/')
-    needs: test
+    needs: tests
 
     runs-on: ${{ matrix.os }}
 
